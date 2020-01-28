@@ -34,16 +34,13 @@ If you want to run training or testing, you must configure the paths to the data
   <img src="./images/demo_gui.png" alt="drawing" width="99%"/>
 </p>
 
-The GUI is based on TkInter library and it's Python bindings. The following command runs the application (other options are displayed using '-h'):
+The GUI is based on TkInter library and it's Python bindings. You can try an interactive demo with any of [provided models](#pretrained-models) (see section [below](#pretrained-models)). Our scripts automatically detect the architecture of the loaded model, just specify the path to the corresponding checkpoint.
 
-```.bash
-python3 demo.py --checkpoint=<realtive to cfg.INTERACTIVE_MODELS_PATH or absolute path to the checkpoint>
-```
-
-You can try an interactive demo with any of provided models (see section [below](#pretrained-models)). Our scripts automatically detect the architecture of the loaded model, just specify the path to the corresponding checkpoint. Examples of the script usage:
+Examples of the script usage:
 
 ```.bash
 # This command runs interactive demo with ResNet-34 model from cfg.INTERACTIVE_MODELS_PATH on GPU with id=0
+# --checkpoint can be relative to cfg.INTERACTIVE_MODELS_PATH or absolute path to the checkpoint
 python3 demo.py --checkpoint=resnet34_dh128_sbd --gpu=0
 
 # This command runs interactive demo with ResNet-34 model from /home/demo/fBRS/weights/
