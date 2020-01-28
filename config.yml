@@ -1,0 +1,8 @@
+INTERACTIVE_MODELS_PATH: "./weights"
+EXPS_PATH: "./experiments"
+
+GRABCUT_PATH: "/datasets/InteractiveSegmentation/GrabCut"
+BERKELEY_PATH: "/datasets/InteractiveSegmentation/Berkeley"
+DAVIS_PATH: "/datasets/InteractiveSegmentation/DAVIS"
+SBD_PATH: "/datasets/InteractiveSegmentation/SBD"
+COCO_MVAL_PATH: "/hdd0/datasets/InteractiveSegmentation/COCO_MVal"

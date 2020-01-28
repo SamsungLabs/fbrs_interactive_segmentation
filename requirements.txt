@@ -1,0 +1,15 @@
+scipy
+numpy
+scikit-image
+opencv-python-headless
+Pillow
+matplotlib
+imgaug
+albumentations
+graphviz
+tqdm
+pyyaml
+easydict
+mxnet-cu101mkl==1.5.1.post0
+gluoncv==0.5.0
+mxboard
