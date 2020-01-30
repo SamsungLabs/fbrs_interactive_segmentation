@@ -18,7 +18,7 @@ We also have full MXNet implementation of our algorithm, you can check [mxnet br
 
 ## Setting up an environment
 
-This framework is built using Python 3.6 and relies on the PyTorch 1.3.1+. The following command installs all necessary packages:
+This framework is built using Python 3.6 and relies on the PyTorch 1.4.0+. The following command installs all necessary packages:
 
 ```.bash
 pip3 install -r requirements.txt
