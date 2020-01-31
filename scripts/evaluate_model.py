@@ -57,7 +57,7 @@ def main():
     args, cfg = parse_args()
 
     checkpoint_path = utils.find_checkpoint(cfg.INTERACTIVE_MODELS_PATH, args.checkpoint)
-    model = utils.load_is_model(checkpoint_path, args.device, num_max_clicks=args.n_clicks)
+    model = utils.load_is_model(checkpoint_path, args.device)
 
     eval_exp_name = get_eval_exp_name(args)
     eval_exp_path = args.logs_path / eval_exp_name
@@ -70,7 +70,6 @@ def main():
         zoom_in_target_size = 600 if dataset_name == 'DAVIS' else 400
         predictor = get_predictor(model, args.mode, args.device,
                                   prob_thresh=args.thresh,
-                                  predictor_params={'num_max_points': args.n_clicks},
                                   zoom_in_params={'target_size': zoom_in_target_size})
 
         dataset_results = evaluate_dataset(dataset, predictor, pred_thr=args.thresh,

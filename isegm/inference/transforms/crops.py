@@ -37,7 +37,7 @@ class Crops(BaseTransform):
                 self._counts[dy:dy + self.crop_height, dx:dx + self.crop_width] += 1
                 image_crop = image_nd[:, :, dy:dy + self.crop_height, dx:dx + self.crop_width]
                 image_crops.append(image_crop)
-        self._image_crops = torch.cat(*image_crops, dim=0)
+        self._image_crops = torch.cat(image_crops, dim=0)
         self._counts = torch.tensor(self._counts, device=image_nd.device, dtype=torch.float32)
 
         clicks_list = clicks_lists[0]

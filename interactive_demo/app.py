@@ -29,7 +29,7 @@ class InteractiveDemoApp(ttk.Frame):
 
         self.brs_modes = ['NoBRS', 'RGB-BRS', 'DistMap-BRS', 'f-BRS-A', 'f-BRS-B', 'f-BRS-C']
 
-        self._init_state(num_max_points=args.n_clicks)
+        self._init_state()
         self._add_menu()
         self._add_canvas()
         self._add_buttons()
@@ -52,7 +52,7 @@ class InteractiveDemoApp(ttk.Frame):
             transforms.Normalize([.485, .456, .406], [.229, .224, .225])
         ])
 
-    def _init_state(self, num_max_points=20):
+    def _init_state(self):
         self.state = {
             'zoomin_params': {
                 'use_zoom_in': tk.BooleanVar(value=True),
@@ -63,8 +63,7 @@ class InteractiveDemoApp(ttk.Frame):
             '_zoomin_history': [],
 
             'predictor_params': {
-                'num_max_points': num_max_points,
-                'net_clicks_limit': tk.IntVar(value=8),
+                'net_clicks_limit': tk.IntVar(value=8)
             },
             'brs_mode': tk.StringVar(value='f-BRS-B'),
             'prob_thresh': tk.DoubleVar(value=0.5),
@@ -329,7 +328,6 @@ class InteractiveDemoApp(ttk.Frame):
         self.predictor = get_predictor(self.net, brs_mode, self.device, prob_thresh=prob_thresh,
                                        zoom_in_params=self.zoomin_params,
                                        predictor_params={
-                                           'num_max_points': self.state['predictor_params']['num_max_points'],
                                            'net_clicks_limit': net_clicks_limit,
                                            'max_size': 800
                                        },

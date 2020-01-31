@@ -13,7 +13,7 @@ def main():
 
     torch.backends.cudnn.deterministic = True
     checkpoint_path = utils.find_checkpoint(cfg.INTERACTIVE_MODELS_PATH, args.checkpoint)
-    model = utils.load_is_model(checkpoint_path, args.device, num_max_clicks=args.n_clicks)
+    model = utils.load_is_model(checkpoint_path, args.device)
 
     root = tk.Tk()
     root.minsize(960, 480)
@@ -29,9 +29,6 @@ def parse_args():
                         help='The path to the checkpoint. '
                              'This can be a relative path (relative to cfg.INTERACTIVE_MODELS_PATH) '
                              'or an absolute path. The file extension can be omitted.')
-
-    parser.add_argument('--n-clicks', type=int, default=100,
-                        help='Maximum number of input clicks for the model.')
 
     parser.add_argument('--gpu', type=int, default=0,
                         help='Id of GPU to use.')

@@ -8,7 +8,7 @@ from .modeling.basic_blocks import SepConvHead
 
 def get_deeplab_model(backbone='resnet50', deeplab_ch=256, aspp_dropout=0.5,
                       norm_layer=nn.BatchNorm2d, backbone_norm_layer=None,
-                      use_rgb_conv=True, max_interactive_points=None):
+                      use_rgb_conv=True):
     model = DistMapsModel(
         feature_extractor=DeepLabV3Plus(backbone=backbone,
                                         ch=deeplab_ch,
@@ -17,7 +17,6 @@ def get_deeplab_model(backbone='resnet50', deeplab_ch=256, aspp_dropout=0.5,
                                         backbone_norm_layer=backbone_norm_layer),
         head=SepConvHead(1, in_channels=deeplab_ch, mid_channels=deeplab_ch // 2,
                          num_layers=2, norm_layer=norm_layer),
-        max_interactive_points=max_interactive_points,
         use_rgb_conv=use_rgb_conv,
         norm_layer=norm_layer
     )
@@ -26,8 +25,7 @@ def get_deeplab_model(backbone='resnet50', deeplab_ch=256, aspp_dropout=0.5,
 
 
 class DistMapsModel(nn.Module):
-    def __init__(self, feature_extractor, head, norm_layer=nn.BatchNorm2d,
-                 max_interactive_points=10, use_rgb_conv=True):
+    def __init__(self, feature_extractor, head, norm_layer=nn.BatchNorm2d, use_rgb_conv=True):
         super(DistMapsModel, self).__init__()
 
         if use_rgb_conv:
@@ -40,13 +38,12 @@ class DistMapsModel(nn.Module):
         else:
             self.rgb_conv = None
 
-        self.dist_maps = DistMaps(norm_radius=260, max_interactive_points=max_interactive_points,
-                                  spatial_scale=1.0)
+        self.dist_maps = DistMaps(norm_radius=260, spatial_scale=1.0)
         self.feature_extractor = feature_extractor
         self.head = head
 
     def forward(self, image, points):
-        coord_features = self.dist_maps(image, points.view(-1, 2))
+        coord_features = self.dist_maps(image, points)
 
         if self.rgb_conv is not None:
             x = self.rgb_conv(torch.cat((image, coord_features), dim=1))

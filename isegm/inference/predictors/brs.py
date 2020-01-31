@@ -104,7 +104,7 @@ class FeatureBRSPredictor(BRSBasePredictor):
 
     def _get_head_input(self, image_nd, points):
         with torch.no_grad():
-            coord_features = self.net.dist_maps(image_nd, points.view(-1, 2))
+            coord_features = self.net.dist_maps(image_nd, points)
             x = self.net.rgb_conv(torch.cat((image_nd, coord_features), dim=1))
             if self.insertion_mode == 'after_c4' or self.insertion_mode == 'after_aspp':
                 c1, _, c3, c4 = self.net.feature_extractor.backbone(x)
@@ -192,7 +192,7 @@ class HRNetFeatureBRSPredictor(BRSBasePredictor):
 
     def _get_head_input(self, image_nd, points):
         with torch.no_grad():
-            coord_features = self.net.dist_maps(image_nd, points.view(-1, 2))
+            coord_features = self.net.dist_maps(image_nd, points)
             x = self.net.rgb_conv(torch.cat((image_nd, coord_features), dim=1))
             feats = self.net.feature_extractor.compute_hrnet_feats(x)
             if self.insertion_mode == 'A':
@@ -229,7 +229,7 @@ class InputBRSPredictor(BRSBasePredictor):
             input_image = image_nd
             if self.optimize_target == 'rgb':
                 input_image = input_image + opt_bias
-            dmaps = self.net.dist_maps(input_image, points_nd.view(-1, 2))
+            dmaps = self.net.dist_maps(input_image, points_nd)
             if self.optimize_target == 'dmaps':
                 dmaps = dmaps + opt_bias
 

@@ -39,8 +39,7 @@ def init_model(cfg):
                              model_cfg.input_normalization['std']),
     ])
 
-    model = get_deeplab_model(backbone='resnet101', deeplab_ch=256, aspp_dropout=0.50,
-                              max_interactive_points=model_cfg.num_max_points)
+    model = get_deeplab_model(backbone='resnet101', deeplab_ch=256, aspp_dropout=0.50)
 
     model.to(cfg.device)
     model.apply(initializer.XavierGluon(rnd_type='gaussian', magnitude=2.0))

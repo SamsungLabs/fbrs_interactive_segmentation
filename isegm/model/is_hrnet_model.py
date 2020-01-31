@@ -6,12 +6,10 @@ from .modeling.hrnet_ocr import HighResolutionNet
 
 
 def get_hrnet_model(width=48, ocr_width=256, small=False,
-                    use_rgb_conv=True, max_interactive_points=None,
-                    with_aux_output=False, norm_layer=nn.BatchNorm2d):
+                    use_rgb_conv=True, with_aux_output=False, norm_layer=nn.BatchNorm2d):
     model = DistMapsHRNetModel(
         feature_extractor=HighResolutionNet(width=width, ocr_width=ocr_width, small=small,
                                             num_classes=1, norm_layer=norm_layer),
-        max_interactive_points=max_interactive_points,
         use_rgb_conv=use_rgb_conv,
         with_aux_output=with_aux_output,
         norm_layer=norm_layer
@@ -21,7 +19,7 @@ def get_hrnet_model(width=48, ocr_width=256, small=False,
 
 
 class DistMapsHRNetModel(nn.Module):
-    def __init__(self, feature_extractor, max_interactive_points=10, use_rgb_conv=True, with_aux_output=False,
+    def __init__(self, feature_extractor, use_rgb_conv=True, with_aux_output=False,
                  norm_layer=nn.BatchNorm2d):
         super(DistMapsHRNetModel, self).__init__()
         self.with_aux_output = with_aux_output
@@ -36,12 +34,11 @@ class DistMapsHRNetModel(nn.Module):
         else:
             self.rgb_conv = None
 
-        self.dist_maps = DistMaps(norm_radius=260, max_interactive_points=max_interactive_points,
-                                  spatial_scale=1.0)
+        self.dist_maps = DistMaps(norm_radius=260, spatial_scale=1.0)
         self.feature_extractor = feature_extractor
 
     def forward(self, image, points):
-        coord_features = self.dist_maps(image, points.view(-1, 2))
+        coord_features = self.dist_maps(image, points)
 
         if self.rgb_conv is not None:
             x = self.rgb_conv(torch.cat((image, coord_features), dim=1))

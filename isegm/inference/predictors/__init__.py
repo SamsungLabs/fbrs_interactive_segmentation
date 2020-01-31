@@ -20,7 +20,6 @@ def get_predictor(net, brs_mode, device,
     }
 
     predictor_params_ = {
-        'num_max_points': 20,
         'optimize_after_n_clicks': 1
     }
 

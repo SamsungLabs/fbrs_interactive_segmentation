@@ -39,9 +39,7 @@ def init_model(cfg):
                              model_cfg.input_normalization['std']),
     ])
 
-    model = get_hrnet_model(width=32, ocr_width=128,
-                            max_interactive_points=model_cfg.num_max_points,
-                            with_aux_output=True)
+    model = get_hrnet_model(width=32, ocr_width=128, with_aux_output=True)
 
     model.to(cfg.device)
     model.apply(initializer.XavierGluon(rnd_type='gaussian', magnitude=2.0))

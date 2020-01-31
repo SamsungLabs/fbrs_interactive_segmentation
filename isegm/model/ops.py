@@ -1,5 +1,4 @@
 import torch
-import torch.nn as nn
 from torch import nn as nn
 
 import isegm.model.initializer as initializer
@@ -36,48 +35,45 @@ class BilinearConvTranspose2d(nn.ConvTranspose2d):
 
 
 class DistMaps(nn.Module):
-    def __init__(self, norm_radius, max_interactive_points=0, spatial_scale=1.0):
+    def __init__(self, norm_radius, spatial_scale=1.0):
         super(DistMaps, self).__init__()
         self.xs = None
         self.coords_shape = None
         self.spatial_scale = spatial_scale
         self.norm_radius = norm_radius
-        self.max_interactive_points = max_interactive_points
         self._count = 0
 
     def get_coord_features(self, points, rows, cols, num_points):
         invalid_points = torch.max(points, dim=1, keepdim=False)[0] < 0
 
-        row_array = torch.arange(start=0, end=rows, step=1, dtype=torch.float, device=points.device)
-        col_array = torch.arange(start=0, end=cols, step=1, dtype=torch.float, device=points.device)
+        row_array = torch.arange(start=0, end=rows, step=1, dtype=torch.float32, device=points.device)
+        col_array = torch.arange(start=0, end=cols, step=1, dtype=torch.float32, device=points.device)
 
         coord_rows, coord_cols = torch.meshgrid(row_array, col_array)
-        coords = torch.stack((coord_rows, coord_cols), dim=0).unsqueeze(0).repeat(num_points, 1, 1, 1)
+        coords = torch.stack((coord_rows, coord_cols), dim=0).unsqueeze(0).repeat(self.coords_shape[0], 1, 1, 1)
 
-        add_xy = (points * self.spatial_scale).view(num_points, points.size(1), 1, 1)
-
+        add_xy = (points * self.spatial_scale).view(self.coords_shape[0], points.size(1), 1, 1)
         coords.add_(-add_xy).div_(self.norm_radius * self.spatial_scale)
         coords.mul_(coords)
 
         coords[:, 0] += coords[:, 1]
         coords = coords[:, :1]
 
-        coords.sqrt_()
-        coords[invalid_points, :, :, :] = 1e5
+        coords[invalid_points, :, :, :] = 1e6
 
-        coords = coords.view(-1, self.max_interactive_points, 1, rows, cols)
+        coords = coords.view(-1, num_points, 1, rows, cols)
         coords = coords.min(dim=1)[0]  # -> (bs * num_masks * 2) x 1 x h x w
         coords = coords.view(-1, 2, rows, cols)
-
-        coords.mul_(2).tanh_()
+        coords.sqrt_().mul_(2).tanh_()
 
         return coords
 
     def forward(self, x, coords):
+        num_points = coords.shape[1] // 2
+        coords = coords.view(-1, 2)
+
         self.xs = x.shape
         self.coords_shape = coords.shape
 
         batch_size, rows, cols = self.xs[0], self.xs[2], self.xs[3]
-        num_points = self.coords_shape[0]
-
         return self.get_coord_features(coords, rows, cols, num_points)

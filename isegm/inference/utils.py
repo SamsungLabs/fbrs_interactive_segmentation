@@ -22,7 +22,7 @@ def get_time_metrics(all_ious, elapsed_time):
     return mean_spc, mean_spi
 
 
-def load_is_model(checkpoint, device, num_max_clicks=20, backbone='auto', **kwargs):
+def load_is_model(checkpoint, device, backbone='auto', **kwargs):
     if isinstance(checkpoint, (str, Path)):
         state_dict = torch.load(checkpoint, map_location='cpu')
     else:
@@ -31,18 +31,17 @@ def load_is_model(checkpoint, device, num_max_clicks=20, backbone='auto', **kwar
     if backbone == 'auto':
         for k in state_dict.keys():
             if 'feature_extractor.stage2.0.branches' in k:
-                return load_hrnet_is_model(state_dict, device, num_max_clicks, backbone, **kwargs)
-        return load_deeplab_is_model(state_dict, device, num_max_clicks, backbone, **kwargs)
+                return load_hrnet_is_model(state_dict, device, backbone, **kwargs)
+        return load_deeplab_is_model(state_dict, device, backbone, **kwargs)
     elif 'resnet' in backbone:
-        return load_deeplab_is_model(state_dict, device, num_max_clicks, backbone, **kwargs)
+        return load_deeplab_is_model(state_dict, device, backbone, **kwargs)
     elif 'hrnet' in backbone:
-        return load_hrnet_is_model(state_dict, device, num_max_clicks, backbone)
+        return load_hrnet_is_model(state_dict, device, backbone)
     else:
         raise NotImplementedError('Unknown backbone')
 
 
-def load_hrnet_is_model(state_dict, device, num_max_clicks=20,
-                        backbone='auto', width=48, ocr_width=256, small=False):
+def load_hrnet_is_model(state_dict, device, backbone='auto', width=48, ocr_width=256, small=False):
     if backbone == 'auto':
         num_fe_weights = len([x for x in state_dict.keys() if 'feature_extractor.' in x])
         small = num_fe_weights < 1800
@@ -55,8 +54,7 @@ def load_hrnet_is_model(state_dict, device, num_max_clicks=20,
         assert  len(s2_conv1_w) == 1
         width = s2_conv1_w[0].shape[0]
 
-    model = get_hrnet_model(width=width, ocr_width=ocr_width, small=small,
-                            max_interactive_points=num_max_clicks, with_aux_output=False)
+    model = get_hrnet_model(width=width, ocr_width=ocr_width, small=small, with_aux_output=False)
 
     model.load_state_dict(state_dict, strict=False)
     for param in model.parameters():
@@ -67,8 +65,7 @@ def load_hrnet_is_model(state_dict, device, num_max_clicks=20,
     return model
 
 
-def load_deeplab_is_model(state_dict, device, num_max_clicks=20,
-                          backbone='auto', deeplab_ch=128, aspp_dropout=0.2):
+def load_deeplab_is_model(state_dict, device, backbone='auto', deeplab_ch=128, aspp_dropout=0.2):
     if backbone == 'auto':
         num_backbone_params = len([x for x in state_dict.keys()
                                    if 'feature_extractor.backbone' in x and not('num_batches_tracked' in x)])
@@ -90,10 +87,7 @@ def load_deeplab_is_model(state_dict, device, num_max_clicks=20,
             if deeplab_ch == 256:
                 aspp_dropout = 0.5
 
-    model = get_deeplab_model(max_interactive_points=num_max_clicks,
-                              backbone=backbone,
-                              deeplab_ch=deeplab_ch,
-                              aspp_dropout=aspp_dropout)
+    model = get_deeplab_model(backbone=backbone, deeplab_ch=deeplab_ch, aspp_dropout=aspp_dropout)
 
     model.load_state_dict(state_dict, strict=False)
     for param in model.parameters():
