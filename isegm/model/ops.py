@@ -46,26 +46,32 @@ class DistMaps(nn.Module):
         self._count = 0
 
     def get_coord_features(self, points, rows, cols, num_points):
+        invalid_points = torch.max(points, dim=1, keepdim=False)[0] < 0
+
         row_array = torch.arange(start=0, end=rows, step=1, dtype=torch.float, device=points.device)
         col_array = torch.arange(start=0, end=cols, step=1, dtype=torch.float, device=points.device)
 
         coord_rows, coord_cols = torch.meshgrid(row_array, col_array)
         coords = torch.stack((coord_rows, coord_cols), dim=0).unsqueeze(0).repeat(num_points, 1, 1, 1)
+
         add_xy = (points * self.spatial_scale).view(num_points, points.size(1), 1, 1)
 
-        coords = (coords - add_xy) / (self.norm_radius * self.spatial_scale)
-        valid_points = torch.min(points, dim=1, keepdim=False)[0] >= 0
-        exist_mask = valid_points.view(num_points, 1, 1, 1)
-        coord_features = torch.sqrt(torch.sum(coords**2, dim=1, keepdim=True))
-        coord_features = torch.tanh(2 * coord_features)
-        coord_features = torch.where(exist_mask * (coord_features + 1e-3) > 0,
-                                     coord_features, torch.ones_like(coord_features))
+        coords.add_(-add_xy).div_(self.norm_radius * self.spatial_scale)
+        coords.mul_(coords)
 
-        coord_features = coord_features.view(-1, self.max_interactive_points, 1, rows, cols)
-        coord_features = torch.min(coord_features, dim=1, keepdim=False)[0]  # -> (bs * num_masks * 2) x 1 x h x w
-        coord_features = coord_features.view(-1, 2, rows, cols)
+        coords[:, 0] += coords[:, 1]
+        coords = coords[:, :1]
 
-        return coord_features
+        coords.sqrt_()
+        coords[invalid_points, :, :, :] = 1e5
+
+        coords = coords.view(-1, self.max_interactive_points, 1, rows, cols)
+        coords = coords.min(dim=1)[0]  # -> (bs * num_masks * 2) x 1 x h x w
+        coords = coords.view(-1, 2, rows, cols)
+
+        coords.mul_(2).tanh_()
+
+        return coords
 
     def forward(self, x, coords):
         self.xs = x.shape
