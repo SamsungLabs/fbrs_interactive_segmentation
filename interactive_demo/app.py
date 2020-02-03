@@ -237,7 +237,7 @@ class InteractiveDemoApp(ttk.Frame):
         text = [
             "Developed by:",
             "K.Sofiiuk and I. Petrov",
-            "MIT License, 2019"
+            "MPL-2.0 License, 2020"
         ]
 
         messagebox.showinfo("About Demo", '\n'.join(text))
