@@ -34,8 +34,8 @@ class InteractiveDemoApp(ttk.Frame):
         self._add_canvas()
         self._add_buttons()
 
-        self.net = model
         self.device = args.device
+        self.net = model.to(self.device)
         self.predictor = None
         self.zoomin_params = None
         self._change_zoomin()

@@ -45,6 +45,9 @@ python3 demo.py --checkpoint=resnet34_dh128_sbd --gpu=0
 
 # This command runs interactive demo with ResNet-34 model from /home/demo/fBRS/weights/
 python3 demo.py --checkpoint=/home/demo/fBRS/weights/resnet34_dh128_sbd
+
+# You can try the demo in CPU only mode
+python3 demo.py --checkpoint=resnet34_dh128_sbd --cpu
 ```
 
 #### Controls:

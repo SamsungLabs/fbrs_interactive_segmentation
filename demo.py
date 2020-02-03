@@ -33,11 +33,17 @@ def parse_args():
     parser.add_argument('--gpu', type=int, default=0,
                         help='Id of GPU to use.')
 
+    parser.add_argument('--cpu', action='store_true', default=False,
+                        help='Use only CPU for inference.')
+
     parser.add_argument('--cfg', type=str, default="config.yml",
                         help='The path to the config file.')
 
     args = parser.parse_args()
-    args.device = torch.device(f'cuda:{args.gpu}')
+    if args.cpu:
+        args.device =torch.device('cpu')
+    else:
+        args.device = torch.device(f'cuda:{args.gpu}')
     cfg = exp.load_config_file(args.cfg, return_edict=True)
 
     return args, cfg

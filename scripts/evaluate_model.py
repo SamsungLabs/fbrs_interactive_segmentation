@@ -30,6 +30,8 @@ def parse_args():
                         help='Maximum number of clicks for the NoC metric.')
     parser.add_argument('--gpus', type=str, default='0',
                         help='ID of used GPU.')
+    parser.add_argument('--cpu', action='store_true', default=False,
+                        help='Use only CPU for inference.')
     parser.add_argument('--thresh', type=float, required=False, default=0.49,
                         help='The segmentation mask is obtained from the probability outputs using this threshold.')
     parser.add_argument('--target-iou', type=float, default=0.90,
@@ -40,7 +42,10 @@ def parse_args():
                         help='The path to the evaluation logs. Default path: cfg.EXPS_PATH/evaluation_logs.')
 
     args = parser.parse_args()
-    args.device = [torch.device(f'cuda:{x}') for x in args.gpus.split(',')][0]
+    if args.cpu:
+        args.device = torch.device('cpu')
+    else:
+        args.device = [torch.device(f'cuda:{x}') for x in args.gpus.split(',')][0]
     args.target_iou = max(0.8, args.target_iou)
 
     cfg = load_config_file(args.config_path, return_edict=True)
