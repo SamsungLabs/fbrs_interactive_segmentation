@@ -36,6 +36,10 @@ def parse_args():
     parser.add_argument('--cpu', action='store_true', default=False,
                         help='Use only CPU for inference.')
 
+    parser.add_argument('--limit-longest-size', type=int, default=800,
+                        help='If the largest side of an image exceeds this value, '
+                             'it is resized so that its largest side is equal to this value.')
+
     parser.add_argument('--cfg', type=str, default="config.yml",
                         help='The path to the config file.')
 

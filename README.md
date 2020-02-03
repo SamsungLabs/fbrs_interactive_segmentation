@@ -44,7 +44,8 @@ Examples of the script usage:
 python3 demo.py --checkpoint=resnet34_dh128_sbd --gpu=0
 
 # This command runs interactive demo with ResNet-34 model from /home/demo/fBRS/weights/
-python3 demo.py --checkpoint=/home/demo/fBRS/weights/resnet34_dh128_sbd
+# If you also do not have a lot of GPU memory, you can reduce --limit-longest-size (default=800)
+python3 demo.py --checkpoint=/home/demo/fBRS/weights/resnet34_dh128_sbd --limit-longest-size=400
 
 # You can try the demo in CPU only mode
 python3 demo.py --checkpoint=resnet34_dh128_sbd --cpu

@@ -28,6 +28,7 @@ class InteractiveDemoApp(ttk.Frame):
         self.pack(fill="both", expand=True)
 
         self.brs_modes = ['NoBRS', 'RGB-BRS', 'DistMap-BRS', 'f-BRS-A', 'f-BRS-B', 'f-BRS-C']
+        self.limit_longest_size = args.limit_longest_size
 
         self._init_state()
         self._add_menu()
@@ -57,7 +58,7 @@ class InteractiveDemoApp(ttk.Frame):
             'zoomin_params': {
                 'use_zoom_in': tk.BooleanVar(value=True),
                 'skip_clicks': tk.IntVar(value=1),
-                'target_size': tk.IntVar(value=480),
+                'target_size': tk.IntVar(value=min(480, self.limit_longest_size)),
                 'expansion_ratio': tk.DoubleVar(value=1.4)
             },
             '_zoomin_history': [],
@@ -151,7 +152,7 @@ class InteractiveDemoApp(ttk.Frame):
                               min_value=0, max_value=None, vartype=int,
                               name='zoom_in_skip_clicks').grid(row=0, column=2, padx=10, pady=1, sticky='w')
         BoundedNumericalEntry(self.zoomin_options_frame, variable=self.state['zoomin_params']['target_size'],
-                              min_value=100, max_value=3000, vartype=int,
+                              min_value=100, max_value=self.limit_longest_size, vartype=int,
                               name='zoom_in_target_size').grid(row=1, column=2, padx=10, pady=1, sticky='w')
         BoundedNumericalEntry(self.zoomin_options_frame, variable=self.state['zoomin_params']['expansion_ratio'],
                               min_value=1.0, max_value=2.0, vartype=float,
@@ -329,7 +330,7 @@ class InteractiveDemoApp(ttk.Frame):
                                        zoom_in_params=self.zoomin_params,
                                        predictor_params={
                                            'net_clicks_limit': net_clicks_limit,
-                                           'max_size': 800
+                                           'max_size': self.limit_longest_size
                                        },
                                        brs_opt_func_params={'min_iou_diff': 1e-3},
                                        lbfgs_params={'maxfun': self.state['lbfgs_max_iters'].get()})
