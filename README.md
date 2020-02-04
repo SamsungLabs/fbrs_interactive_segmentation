@@ -70,6 +70,10 @@ python3 demo.py --checkpoint=resnet34_dh128_sbd --cpu
     * *Alpha blending coefficient* slider adjusts the intensity of all predicted masks.
     * *Visualisation click radius* slider adjusts the size of red and green dots depicting clicks.
 
+<p align="center">
+  <img src="./images/fbrs_dextr_comparison.gif" alt="drawing" width="95%"/>
+</p>
+
 ## Datasets
 
 We train all our models on SBD dataset and evaluate them on GrabCut, Berkeley, DAVIS, SBD and COCO_MVal datasets. We additionally provide the results of models that trained on combination of [COCO](http://cocodataset.org) and [LVIS](https://www.lvisdataset.org) datasets.
