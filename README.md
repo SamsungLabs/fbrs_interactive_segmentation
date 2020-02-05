@@ -14,34 +14,32 @@ This repository provides the official MXNet implementation of the following pape
 >
 > **Abstract:** *Deep neural networks have become a mainstream approach to interactive segmentation. As we show in our experiments, while for some images a trained network provides accurate segmentation result with just a few clicks, for some unknown objects it cannot achieve satisfactory result even with a large amount of user input. Recently proposed backpropagating refinement (BRS) scheme introduces an optimization problem for interactive segmentation that results in significantly better performance for the hard cases. At the same time, BRS requires running forward and backward pass through a deep network several times that leads to significantly increased computational budget per click compared to other methods. We propose f-BRS (feature backpropagating refinement scheme) that solves an optimization problem with respect to auxiliary variables instead of the network inputs, and requires running forward and backward pass just for a small part of a network. Experiments on GrabCut, Berkeley, DAVIS and SBD datasets set new state-of-the-art at an order of magnitude lower time per click compared to original BRS.*
 
-### Setting up an environment
+## Setting up an environment
 
 This framework is built using Python 3.6 and relies on the recent version of MXNet. The easiest way to install MXNet
 is through pip. The following command installs all necessary packages:
 
-```
+```.bash
 pip3 install -r requirements.txt
 ```
 
 You can also use our [Dockerfile](./Dockerfile) to build a container with configured environment. 
 
-If you want to run training or testing, you must configure the paths to the datasets in [config.yml](config.yml) (SBD for training and testing, GrabCut, Berkeley, DAVIS for testing only).
+If you want to run training or testing, you must configure the paths to the datasets in [config.yml](config.yml) (SBD for training and testing, GrabCut, Berkeley, DAVIS and COCO_MVal for testing only).
 
-### Interactive Segmentation Demo
+## Interactive Segmentation Demo
 
 <p align="center">
-  <img src="./images/demo_gui.png" alt="drawing" width="99%"/>
+  <img src="./images/demo_gui.jpg" alt="drawing" width="99%"/>
 </p>
 
-The GUI is based on TkInter library and it's Python bindings. The following command runs the application (other options are displayed using '-h'):
+The GUI is based on TkInter library and it's Python bindings. You can try an interactive demo with any of [provided models](#pretrained-models) (see section [below](#pretrained-models)). Our scripts automatically detect the architecture of the loaded model, just specify the path to the corresponding checkpoint.
 
-```
+Examples of the script usage:
+
+```.bash
 python3 demo.py --checkpoint=<realtive to cfg.INTERACTIVE_MODELS_PATH or absolute path to the checkpoint>
-```
 
-You can try an interactive demo with any of provided models (see section [below](#pretrained-models)). Our scripts automatically detect the architecture of the loaded model, just specify the path to the corresponding checkpoint. Examples of the script usage:
-
-```
 # This command runs interactive demo with ResNet-34 model from cfg.INTERACTIVE_MODELS_PATH on GPU with id=0
 python3 demo.py --checkpoint=resnet34_dh128_sbd --gpu=0
 
@@ -68,7 +66,11 @@ python3 demo.py --checkpoint=/home/demo/fBRS/weights/resnet34_dh128_sbd
     * *Alpha blending coefficient* slider adjusts the intensity of all predicted masks.
     * *Visualisation click radius* slider adjusts the size of red and green dots depicting clicks.
 
-### Datasets
+<p align="center">
+  <img src="./images/fbrs_dextr_comparison.gif" alt="drawing" width="95%"/>
+</p>
+
+## Datasets
 
 We train all our models on SBD dataset and evaluate them on GrabCut, Berkeley, DAVIS, SBD and COCO_MVal datasets. We additionally provide the results of models that trained on combination of [COCO](http://cocodataset.org) and [LVIS](https://www.lvisdataset.org) datasets.
 
@@ -97,10 +99,10 @@ To construct COCO_MVal dataset we sample 800 object instances from the validatio
 
 Don't forget to change the paths to the datasets in [config.yml](config.yml) after downloading and unpacking.
 
-### Testing
+## Testing
 
-#### Pretrained models
-We provide pretrained models with different backbones for interactive segmentation. The evaluation results are different from the ones presented in our paper, because we have retrained all models on the new codebase presented in this repository. We greatly accelerated the inference of the RGB-BRS algorithm - now it works from 2.5 to 4 times faster on SBD dataset compared to the timings given in the paper. Nevertheless, the new results sometimes are even better.
+### Pretrained models
+We provide pretrained models with different backbones for interactive segmentation. The evaluation results are different from the ones presented in our paper, because we have retrained all models on the new codebase presented in this repository. We greatly accelerated the inference of the RGB-BRS algorithm - now it works from 2.5 to 4 times faster on SBD dataset compared to the timings given in the paper. Nevertheless, the new results sometimes are even better. 
 
 You can find model weights and test results in the tables below:
 
@@ -268,18 +270,18 @@ You can find model weights and test results in the tables below:
 </table>
 
 
-#### Evaluation script
+### Evaluation
 
 We provide the script to test all the presented models in all possible configurations on GrabCut, Berkeley, DAVIS, COCO_MVal and SBD datasets. To test a model, you should download its weights and put it in `./weights` folder (you can change this path in the [config.yml](config.yml), see `INTERACTIVE_MODELS_PATH` variable). To test any of our models, just specify the path to the corresponding checkpoint. Our scripts automatically detect the architecture of the loaded model.
 
 The following command runs the model evaluation (other options are displayed using '-h'):
 
-```
+```.bash
 python3 scripts/evaluate_model.py <brs-mode> --checkpoint=<checkpoint-name>
 ```
 
 Examples of the script usage:
-```
+```.bash
 # This command evaluates ResNet-34 model in f-BRS-B mode on all Datasets.
 python3 scripts/evaluate_model.py f-BRS-B --checkpoint=resnet34_dh128_sbd
 
@@ -290,14 +292,14 @@ python3 scripts/evaluate_model.py RGB-BRS --checkpoint=resnet50_dh128_sbd --data
 python3 scripts/evaluate_model.py DistMap-BRS --checkpoint=resnet101_dh256_sbd --datasets=DAVIS
 ```
 
-#### Jupyter notebook
+### Jupyter notebook
 
 You can also interactively experiment with our models using [test_any_model.ipynb](./notebooks/test_any_model.ipynb) Jupyter notebook.
 
-### Training
+## Training
 
 We provide the scripts for training our models on SBD dataset. You can start training with the following commands:
-```
+```.bash
 # ResNet-34 model
 python3 train.py models/sbd/r34_dh128.py --gpus=0,1 --workers=4 --exp-name=first-try
 
@@ -312,8 +314,12 @@ For each experiment, a separate folder is created in the `./experiments` with Te
 
 Please note that we have trained ResNet-34 and ResNet-50 models on 2 GPUs, ResNet-101 on 4 GPUs (we used Nvidia Tesla P40 for training). If you are going to train models in different GPUs configuration, you will need to set a different batch size. You can specify batch size using the command line argument `--batch-size` or change the default value in model script.
 
+## License
 
-### Citation
+The code is released under the MPL 2.0 License. MPL is a copyleft license that is easy to comply with. You must make the source code for any of your changes available under MPL, but you can combine the MPL software with proprietary code, as long as you keep the MPL code in separate files.
+
+
+## Citation
 
 If you find this work is useful for your research, please cite our paper:
 ```
@@ -325,6 +331,3 @@ If you find this work is useful for your research, please cite our paper:
 }
 ```
 
-### License
-
-The code is released under the MPL 2.0 License. MPL is a copyleft license that is easy to comply with. You must make the source code for any of your changes available under MPL, but you can combine the MPL software with proprietary code, as long as you keep the MPL code in separate files.
