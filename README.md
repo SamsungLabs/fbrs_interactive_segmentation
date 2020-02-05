@@ -31,7 +31,7 @@ If you want to run training or testing, you must configure the paths to the data
 ## Interactive Segmentation Demo
 
 <p align="center">
-  <img src="./images/demo_gui.png" alt="drawing" width="99%"/>
+  <img src="./images/demo_gui.jpg" alt="drawing" width="99%"/>
 </p>
 
 The GUI is based on TkInter library and it's Python bindings. You can try an interactive demo with any of [provided models](#pretrained-models) (see section [below](#pretrained-models)). Our scripts automatically detect the architecture of the loaded model, just specify the path to the corresponding checkpoint.
