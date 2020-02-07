@@ -39,7 +39,7 @@ class OracleMaskLoss(torch.nn.Module):
         self.history = []
 
     def forward(self, result, pos_mask, neg_mask):
-        gt_mask = self.gt_mask.as_in_context(result.context)
+        gt_mask = self.gt_mask.to(result.device)
         if self.predictor.object_roi is not None:
             r1, r2, c1, c2 = self.predictor.object_roi[:4]
             gt_mask = gt_mask[:, :, r1:r2 + 1, c1:c2 + 1]
