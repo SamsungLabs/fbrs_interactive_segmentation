@@ -101,14 +101,17 @@ class InteractiveDemoApp(ttk.Frame):
             self.predictor.zoom_in.reset()
 
     def _add_menu(self):
-        self.menubar = tk.Menu(self, bd=1, tearoff=False)
-        self.menubar.add_command(label="Load image", command=self._load_image_callback)
-        self.menubar.add_command(label="Save mask", command=self._save_mask_callback)
+        self.menubar = FocusLabelFrame(self, bd=1)
+        self.menubar.pack(side=tk.TOP, fill='x')
 
-        self.menubar.add_command(label="About", command=self._about_callback)
-        self.menubar.add_command(label="Exit", command=self.master.quit)
-
-        self.master.config(menu=self.menubar)
+        button = FocusButton(self.menubar, text='Load image', command=self._load_image_callback)
+        button.pack(side=tk.LEFT)
+        button = FocusButton(self.menubar, text='Save mask', command=self._save_mask_callback)
+        button.pack(side=tk.LEFT)
+        button = FocusButton(self.menubar, text='About', command=self._about_callback)
+        button.pack(side=tk.LEFT)
+        button = FocusButton(self.menubar, text='Exit', command=self.master.quit)
+        button.pack(side=tk.LEFT)
 
     def _add_canvas(self):
         self.canvas_frame = FocusLabelFrame(self, text="Image")
