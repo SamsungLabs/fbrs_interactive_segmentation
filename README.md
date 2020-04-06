@@ -24,7 +24,7 @@ This framework is built using Python 3.6 and relies on the PyTorch 1.4.0+. The f
 pip3 install -r requirements.txt
 ```
 
-You can also use our [Dockerfile](./Dockerfile) to build a container with configured environment. 
+You can also use our [Dockerfile](./Dockerfile) to build a container with configured environment.
 
 If you want to run training or testing, you must configure the paths to the datasets in [config.yml](config.yml) (SBD for training and testing, GrabCut, Berkeley, DAVIS and COCO_MVal for testing only).
 
@@ -59,14 +59,14 @@ python3 demo.py --checkpoint=resnet34_dh128_sbd --cpu
 
 #### Interactive segmentation options:
 * ZoomIn (can be turned on/off using the checkbox)
-    * *Skip clicks* - the number of clicks to skip before using ZoomIn. 
+    * *Skip clicks* - the number of clicks to skip before using ZoomIn.
     * *Target size* - ZoomIn crop is resized so its longer side matches this value (increase for large objects).
     * *Expand ratio* - object bbox is rescaled with this ratio before crop.
 * BRS parameters (BRS type can be changed using the dropdown menu)
-    * *Network clicks* - the number of first clicks that are included in the network's input. Subsequent clicks are processed only using BRS  (NoBRS ignores this option). 
+    * *Network clicks* - the number of first clicks that are included in the network's input. Subsequent clicks are processed only using BRS  (NoBRS ignores this option).
     * *L-BFGS-B max iterations* - the maximum number of function evaluation for each step of optimization in BRS (increase for better accuracy and longer computational time for each click).  
 * Visualisation parameters
-    * *Prediction threshold* slider adjusts the threshold for binarization of probability map for the current object. 
+    * *Prediction threshold* slider adjusts the threshold for binarization of probability map for the current object.
     * *Alpha blending coefficient* slider adjusts the intensity of all predicted masks.
     * *Visualisation click radius* slider adjusts the size of red and green dots depicting clicks.
 
@@ -106,7 +106,7 @@ Don't forget to change the paths to the datasets in [config.yml](config.yml) aft
 ## Testing
 
 ### Pretrained models
-We provide pretrained models with different backbones for interactive segmentation. The evaluation results are different from the ones presented in our paper, because we have retrained all models on the new codebase presented in this repository. We greatly accelerated the inference of the RGB-BRS algorithm - now it works from 2.5 to 4 times faster on SBD dataset compared to the timings given in the paper. Nevertheless, the new results sometimes are even better. 
+We provide pretrained models with different backbones for interactive segmentation. The evaluation results are different from the ones presented in our paper, because we have retrained all models on the new codebase presented in this repository. We greatly accelerated the inference of the RGB-BRS algorithm - now it works from 2.5 to 4 times faster on SBD dataset compared to the timings given in the paper. Nevertheless, the new results sometimes are even better.
 
 Note that all ResNet models were trained using [MXNet branch](https://github.com/saic-vul/fbrs_interactive_segmentation/tree/mxnet) and then converted to PyTorch (they have equivalent results). We provide the [script](./scripts/convert_weights_mx2pt.py) that was used to convert the models. HRNet models were trained using PyTorch.
 
@@ -177,6 +177,7 @@ You can find model weights and test results in the tables below:
     <td>NoC<br>85%</td>
     <td>NoC<br>90%</td>
   </tr>
+  
   <tr>
     <td rowspan="2">ResNet-34<br>(SBD)</td>
     <td>RGB-BRS</td>
@@ -191,6 +192,7 @@ You can find model weights and test results in the tables below:
     <td>4.16</td>
     <td>5.52</td>
   </tr>
+
   <tr>
     <td>f-BRS-B</td>
     <td>2.06</td>
@@ -204,6 +206,7 @@ You can find model weights and test results in the tables below:
     <td>4.31</td>
     <td>5.79</td>
   </tr>
+
   <tr>
     <td rowspan="2">ResNet-50<br>(SBD)</td>
     <td>RGB-BRS</td>
@@ -217,8 +220,8 @@ You can find model weights and test results in the tables below:
     <td>6.59</td>
     <td>4.12</td>
     <td>5.61</td>
-</td>
   </tr>
+
   <tr>
     <td>f-BRS-B</td>
     <td>2.20</td>
@@ -232,6 +235,7 @@ You can find model weights and test results in the tables below:
     <td>4.31</td>
     <td>6.26</td>
   </tr>
+
   <tr>
     <td rowspan="2">ResNet-101<br>(SBD)</td>
     <td>RGB-BRS</td>
@@ -245,8 +249,8 @@ You can find model weights and test results in the tables below:
     <td><b>6.28</b></td>
     <td>3.98</td>
     <td>5.45</td>
-</td>
   </tr>
+
   <tr>
     <td>f-BRS-B</td>
     <td>2.30</td>
@@ -260,7 +264,7 @@ You can find model weights and test results in the tables below:
     <td>4.11</td>
     <td>5.91</td>
   </tr>
-  
+
   <tr>
     <td rowspan="2">HRNet-W18+OCR<br>(SBD)</td>
     <td>RGB-BRS</td>
@@ -274,8 +278,8 @@ You can find model weights and test results in the tables below:
     <td>6.84</td>
     <td>3.62</td>
     <td><b>5.04</b></td>
-</td>
   </tr>
+
   <tr>
     <td>f-BRS-B</td>
     <td>1.86</td>
@@ -289,7 +293,7 @@ You can find model weights and test results in the tables below:
     <td>3.87</td>
     <td>5.57</td>
   </tr>
-  
+
   <tr>
     <td rowspan="2">HRNet-W32+OCR<br>(SBD)</td>
     <td>RGB-BRS</td>
@@ -303,8 +307,8 @@ You can find model weights and test results in the tables below:
     <td><b>6.33</b></td>
     <td>3.61</td>
     <td><b>5.12</b></td>
-</td>
   </tr>
+
   <tr>
     <td>f-BRS-B</td>
     <td>1.78</td>
@@ -336,8 +340,8 @@ You can find model weights and test results in the tables below:
     <td><b>6.85</b></td>
     <td>2.41</td>
     <td><b>3.47</b></td>
-</td>
   </tr>
+
   <tr>
     <td>f-BRS-B</td>
     <td>1.52</td>
@@ -351,7 +355,7 @@ You can find model weights and test results in the tables below:
     <td>2.34</td>
     <td><b>3.43</b></td>
   </tr>
-  
+
   <tr>
     <td rowspan="2">HRNet-W32+OCR<br>(COCO+LVIS)</td>
     <td>RGB-BRS</td>
@@ -365,8 +369,8 @@ You can find model weights and test results in the tables below:
     <td>6.96</td>
     <td>2.38</td>
     <td>3.55</td>
-</td>
   </tr>
+
   <tr>
     <td>f-BRS-B</td>
     <td>1.54</td>
@@ -452,4 +456,3 @@ If you find this work is useful for your research, please cite our paper:
   year={2020}
 }
 ```
-

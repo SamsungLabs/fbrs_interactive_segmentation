@@ -36,6 +36,8 @@ def parse_args():
                         help='The segmentation mask is obtained from the probability outputs using this threshold.')
     parser.add_argument('--target-iou', type=float, default=0.90,
                         help='Target IoU threshold for the NoC metric. (min possible value = 0.8)')
+    parser.add_argument('--norm-radius', type=int, default=260)
+    parser.add_argument('--clicks-limit', type=int, default=None)
     parser.add_argument('--config-path', type=str, default='./config.yml',
                         help='The path to the config file.')
     parser.add_argument('--logs-path', type=str, default='',
@@ -45,7 +47,7 @@ def parse_args():
     if args.cpu:
         args.device = torch.device('cpu')
     else:
-        args.device = [torch.device(f'cuda:{x}') for x in args.gpus.split(',')][0]
+        args.device = torch.device(f"cuda:{args.gpus.split(',')[0]}")
     args.target_iou = max(0.8, args.target_iou)
 
     cfg = load_config_file(args.config_path, return_edict=True)
@@ -62,11 +64,16 @@ def main():
     args, cfg = parse_args()
 
     checkpoint_path = utils.find_checkpoint(cfg.INTERACTIVE_MODELS_PATH, args.checkpoint)
-    model = utils.load_is_model(checkpoint_path, args.device)
+    model = utils.load_is_model(checkpoint_path, args.device, norm_radius=args.norm_radius)
 
     eval_exp_name = get_eval_exp_name(args)
     eval_exp_path = args.logs_path / eval_exp_name
     eval_exp_path.mkdir(parents=True, exist_ok=True)
+    predictor_params = None
+    if args.clicks_limit is not None:
+        if args.clicks_limit == -1:
+            args.clicks_limit = args.n_clicks
+        predictor_params = {'net_clicks_limit': args.clicks_limit}
 
     print_header = True
     for dataset_name in args.datasets.split(','):
@@ -75,7 +82,8 @@ def main():
         zoom_in_target_size = 600 if dataset_name == 'DAVIS' else 400
         predictor = get_predictor(model, args.mode, args.device,
                                   prob_thresh=args.thresh,
-                                  zoom_in_params={'target_size': zoom_in_target_size})
+                                  zoom_in_params={'target_size': zoom_in_target_size},
+                                  predictor_params=predictor_params)
 
         dataset_results = evaluate_dataset(dataset, predictor, pred_thr=args.thresh,
                                            max_iou_thr=args.target_iou,

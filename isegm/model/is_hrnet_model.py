@@ -5,14 +5,17 @@ from isegm.model.ops import DistMaps
 from .modeling.hrnet_ocr import HighResolutionNet
 
 
-def get_hrnet_model(width=48, ocr_width=256, small=False,
-                    use_rgb_conv=True, with_aux_output=False, norm_layer=nn.BatchNorm2d):
+def get_hrnet_model(width=48, ocr_width=256, small=False, norm_radius=260,
+                    use_rgb_conv=True, with_aux_output=False, cpu_dist_maps=False,
+                    norm_layer=nn.BatchNorm2d):
     model = DistMapsHRNetModel(
         feature_extractor=HighResolutionNet(width=width, ocr_width=ocr_width, small=small,
                                             num_classes=1, norm_layer=norm_layer),
         use_rgb_conv=use_rgb_conv,
         with_aux_output=with_aux_output,
-        norm_layer=norm_layer
+        norm_layer=norm_layer,
+        norm_radius=norm_radius,
+        cpu_dist_maps=cpu_dist_maps
     )
 
     return model
@@ -20,7 +23,7 @@ def get_hrnet_model(width=48, ocr_width=256, small=False,
 
 class DistMapsHRNetModel(nn.Module):
     def __init__(self, feature_extractor, use_rgb_conv=True, with_aux_output=False,
-                 norm_layer=nn.BatchNorm2d):
+                 norm_layer=nn.BatchNorm2d, norm_radius=260, cpu_dist_maps=False):
         super(DistMapsHRNetModel, self).__init__()
         self.with_aux_output = with_aux_output
 
@@ -34,7 +37,7 @@ class DistMapsHRNetModel(nn.Module):
         else:
             self.rgb_conv = None
 
-        self.dist_maps = DistMaps(norm_radius=260, spatial_scale=1.0)
+        self.dist_maps = DistMaps(norm_radius=norm_radius, spatial_scale=1.0, cpu_mode=cpu_dist_maps)
         self.feature_extractor = feature_extractor
 
     def forward(self, image, points):

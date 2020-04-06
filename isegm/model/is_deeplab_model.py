@@ -8,7 +8,8 @@ from .modeling.basic_blocks import SepConvHead
 
 def get_deeplab_model(backbone='resnet50', deeplab_ch=256, aspp_dropout=0.5,
                       norm_layer=nn.BatchNorm2d, backbone_norm_layer=None,
-                      use_rgb_conv=True):
+                      use_rgb_conv=True, cpu_dist_maps=False,
+                      norm_radius=260):
     model = DistMapsModel(
         feature_extractor=DeepLabV3Plus(backbone=backbone,
                                         ch=deeplab_ch,
@@ -18,14 +19,17 @@ def get_deeplab_model(backbone='resnet50', deeplab_ch=256, aspp_dropout=0.5,
         head=SepConvHead(1, in_channels=deeplab_ch, mid_channels=deeplab_ch // 2,
                          num_layers=2, norm_layer=norm_layer),
         use_rgb_conv=use_rgb_conv,
-        norm_layer=norm_layer
+        norm_layer=norm_layer,
+        norm_radius=norm_radius,
+        cpu_dist_maps=cpu_dist_maps
     )
 
     return model
 
 
 class DistMapsModel(nn.Module):
-    def __init__(self, feature_extractor, head, norm_layer=nn.BatchNorm2d, use_rgb_conv=True):
+    def __init__(self, feature_extractor, head, norm_layer=nn.BatchNorm2d, use_rgb_conv=True,
+                 cpu_dist_maps=False, norm_radius=260):
         super(DistMapsModel, self).__init__()
 
         if use_rgb_conv:
@@ -38,7 +42,8 @@ class DistMapsModel(nn.Module):
         else:
             self.rgb_conv = None
 
-        self.dist_maps = DistMaps(norm_radius=260, spatial_scale=1.0)
+        self.dist_maps = DistMaps(norm_radius=norm_radius, spatial_scale=1.0,
+                                  cpu_mode=cpu_dist_maps)
         self.feature_extractor = feature_extractor
         self.head = head
 

@@ -13,7 +13,7 @@ def main():
 
     torch.backends.cudnn.deterministic = True
     checkpoint_path = utils.find_checkpoint(cfg.INTERACTIVE_MODELS_PATH, args.checkpoint)
-    model = utils.load_is_model(checkpoint_path, args.device)
+    model = utils.load_is_model(checkpoint_path, args.device, cpu_dist_maps=True, norm_radius=args.norm_radius)
 
     root = tk.Tk()
     root.minsize(960, 480)
@@ -39,6 +39,8 @@ def parse_args():
     parser.add_argument('--limit-longest-size', type=int, default=800,
                         help='If the largest side of an image exceeds this value, '
                              'it is resized so that its largest side is equal to this value.')
+
+    parser.add_argument('--norm-radius', type=int, default=260)
 
     parser.add_argument('--cfg', type=str, default="config.yml",
                         help='The path to the config file.')

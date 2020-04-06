@@ -36,12 +36,13 @@ def load_is_model(checkpoint, device, backbone='auto', **kwargs):
     elif 'resnet' in backbone:
         return load_deeplab_is_model(state_dict, device, backbone, **kwargs)
     elif 'hrnet' in backbone:
-        return load_hrnet_is_model(state_dict, device, backbone)
+        return load_hrnet_is_model(state_dict, device, backbone, **kwargs)
     else:
         raise NotImplementedError('Unknown backbone')
 
 
-def load_hrnet_is_model(state_dict, device, backbone='auto', width=48, ocr_width=256, small=False):
+def load_hrnet_is_model(state_dict, device, backbone='auto', width=48, ocr_width=256,
+                        small=False, cpu_dist_maps=False, norm_radius=260):
     if backbone == 'auto':
         num_fe_weights = len([x for x in state_dict.keys() if 'feature_extractor.' in x])
         small = num_fe_weights < 1800
@@ -54,7 +55,9 @@ def load_hrnet_is_model(state_dict, device, backbone='auto', width=48, ocr_width
         assert  len(s2_conv1_w) == 1
         width = s2_conv1_w[0].shape[0]
 
-    model = get_hrnet_model(width=width, ocr_width=ocr_width, small=small, with_aux_output=False)
+    model = get_hrnet_model(width=width, ocr_width=ocr_width, small=small,
+                            with_aux_output=False, cpu_dist_maps=cpu_dist_maps,
+                            norm_radius=norm_radius)
 
     model.load_state_dict(state_dict, strict=False)
     for param in model.parameters():
@@ -65,7 +68,8 @@ def load_hrnet_is_model(state_dict, device, backbone='auto', width=48, ocr_width
     return model
 
 
-def load_deeplab_is_model(state_dict, device, backbone='auto', deeplab_ch=128, aspp_dropout=0.2):
+def load_deeplab_is_model(state_dict, device, backbone='auto', deeplab_ch=128, aspp_dropout=0.2,
+                          cpu_dist_maps=False, norm_radius=260):
     if backbone == 'auto':
         num_backbone_params = len([x for x in state_dict.keys()
                                    if 'feature_extractor.backbone' in x and not('num_batches_tracked' in x)])
@@ -87,7 +91,9 @@ def load_deeplab_is_model(state_dict, device, backbone='auto', deeplab_ch=128, a
             if deeplab_ch == 256:
                 aspp_dropout = 0.5
 
-    model = get_deeplab_model(backbone=backbone, deeplab_ch=deeplab_ch, aspp_dropout=aspp_dropout)
+    model = get_deeplab_model(backbone=backbone, deeplab_ch=deeplab_ch,
+                              aspp_dropout=aspp_dropout, cpu_dist_maps=cpu_dist_maps,
+                              norm_radius=norm_radius)
 
     model.load_state_dict(state_dict, strict=False)
     for param in model.parameters():

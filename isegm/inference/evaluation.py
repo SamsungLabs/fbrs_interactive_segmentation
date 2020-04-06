@@ -35,7 +35,7 @@ def evaluate_dataset(dataset, predictor, oracle_eval=False, **kwargs):
 
 def evaluate_sample(image_nd, instances_mask, predictor, max_iou_thr,
                     pred_thr=0.49, max_clicks=20):
-    clicker = Clicker(instances_mask)
+    clicker = Clicker(gt_mask=instances_mask)
     pred_mask = np.zeros_like(instances_mask)
     ious_list = []
 

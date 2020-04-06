@@ -21,19 +21,34 @@ class BRSBasePredictor(BasePredictor):
         self.opt_data = None
         self.input_data = None
 
-    def _get_clicks_maps(self, clicker):
-        pos_map, neg_map = clicker.get_clicks_maps()
-        return pos_map[np.newaxis, :], neg_map[np.newaxis, :]
+    def _get_clicks_maps_nd(self, clicks_lists, image_shape, radius=1):
+        pos_clicks_map = np.zeros((len(clicks_lists), 1) + image_shape, dtype=np.float32)
+        neg_clicks_map = np.zeros((len(clicks_lists), 1) + image_shape, dtype=np.float32)
 
-    def _get_clicks_maps_nd(self, clicks_maps):
-        pos_clicks_map, neg_clicks_map = clicks_maps
+        for list_indx, clicks_list in enumerate(clicks_lists):
+            for click in clicks_list:
+                y, x = click.coords
+                y, x = int(round(y)), int(round(x))
+                y1, x1 = y - radius, x - radius
+                y2, x2 = y + radius + 1, x + radius + 1
+
+                if click.is_positive:
+                    pos_clicks_map[list_indx, 0, y1:y2, x1:x2] = True
+                else:
+                    neg_clicks_map[list_indx, 0, y1:y2, x1:x2] = True
+
         with torch.no_grad():
             pos_clicks_map = torch.from_numpy(pos_clicks_map).to(self.device)
             neg_clicks_map = torch.from_numpy(neg_clicks_map).to(self.device)
-            pos_clicks_map = pos_clicks_map.unsqueeze(1)
-            neg_clicks_map = neg_clicks_map.unsqueeze(1)
 
         return pos_clicks_map, neg_clicks_map
+
+    def get_states(self):
+        return {'transform_states': self._get_transform_states(), 'opt_data': self.opt_data}
+
+    def set_states(self, states):
+        self._set_transform_states(states['transform_states'])
+        self.opt_data = states['opt_data']
 
 
 class FeatureBRSPredictor(BRSBasePredictor):
@@ -51,9 +66,10 @@ class FeatureBRSPredictor(BRSBasePredictor):
         else:
             raise NotImplementedError
 
-    def _get_prediction(self, image_nd, clicks_lists, clicks_maps, is_image_changed):
+    def _get_prediction(self, image_nd, clicks_lists, is_image_changed):
         points_nd = self.get_points_nd(clicks_lists)
-        pos_mask, neg_mask = self._get_clicks_maps_nd(clicks_maps)
+        pos_mask, neg_mask = self._get_clicks_maps_nd(clicks_lists, image_nd.shape[2:])
+
         num_clicks = len(clicks_lists[0])
         bs = image_nd.shape[0] // 2 if self.with_flip else image_nd.shape[0]
 
@@ -137,9 +153,9 @@ class HRNetFeatureBRSPredictor(BRSBasePredictor):
         else:
             raise NotImplementedError
 
-    def _get_prediction(self, image_nd, clicks_lists, clicks_maps, is_image_changed):
+    def _get_prediction(self, image_nd, clicks_lists, is_image_changed):
         points_nd = self.get_points_nd(clicks_lists)
-        pos_mask, neg_mask = self._get_clicks_maps_nd(clicks_maps)
+        pos_mask, neg_mask = self._get_clicks_maps_nd(clicks_lists, image_nd.shape[2:])
         num_clicks = len(clicks_lists[0])
         bs = image_nd.shape[0] // 2 if self.with_flip else image_nd.shape[0]
 
@@ -214,9 +230,9 @@ class InputBRSPredictor(BRSBasePredictor):
         super().__init__(model, device, opt_functor=opt_functor, **kwargs)
         self.optimize_target = optimize_target
 
-    def _get_prediction(self, image_nd, clicks_lists, clicks_maps, is_image_changed):
+    def _get_prediction(self, image_nd, clicks_lists, is_image_changed):
         points_nd = self.get_points_nd(clicks_lists)
-        pos_mask, neg_mask = self._get_clicks_maps_nd(clicks_maps)
+        pos_mask, neg_mask = self._get_clicks_maps_nd(clicks_lists, image_nd.shape[2:])
         num_clicks = len(clicks_lists[0])
 
         if self.opt_data is None or is_image_changed:

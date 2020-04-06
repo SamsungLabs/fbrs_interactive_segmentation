@@ -34,13 +34,12 @@ class BasePredictor(object):
 
     def get_prediction(self, clicker):
         clicks_list = clicker.get_clicks()
-        clicks_maps = self._get_clicks_maps(clicker)
 
-        image_nd, clicks_lists, clicks_maps, is_image_changed = self.apply_transforms(
-            self.original_image, [clicks_list], clicks_maps
+        image_nd, clicks_lists, is_image_changed = self.apply_transforms(
+            self.original_image, [clicks_list]
         )
 
-        pred_logits = self._get_prediction(image_nd, clicks_lists, clicks_maps, is_image_changed)
+        pred_logits = self._get_prediction(image_nd, clicks_lists, is_image_changed)
         prediction = F.interpolate(pred_logits, mode='bilinear', align_corners=True,
                                    size=image_nd.size()[2:])
 
@@ -52,17 +51,25 @@ class BasePredictor(object):
 
         return prediction.cpu().numpy()[0, 0]
 
-    def _get_prediction(self, image_nd, clicks_lists, clicks_maps, is_image_changed):
+    def _get_prediction(self, image_nd, clicks_lists, is_image_changed):
         points_nd = self.get_points_nd(clicks_lists)
         return self.net(image_nd, points_nd)['instances']
 
-    def apply_transforms(self, image_nd, clicks_lists, clicks_maps=None):
+    def _get_transform_states(self):
+        return [x.get_state() for x in self.transforms]
+
+    def _set_transform_states(self, states):
+        assert len(states) == len(self.transforms)
+        for state, transform in zip(states, self.transforms):
+            transform.set_state(state)
+
+    def apply_transforms(self, image_nd, clicks_lists):
         is_image_changed = False
         for t in self.transforms:
-            image_nd, clicks_lists, clicks_maps = t.transform(image_nd, clicks_lists, clicks_maps)
+            image_nd, clicks_lists = t.transform(image_nd, clicks_lists)
             is_image_changed |= t.image_changed
 
-        return image_nd, clicks_lists, clicks_maps, is_image_changed
+        return image_nd, clicks_lists, is_image_changed
 
     def get_points_nd(self, clicks_lists):
         total_clicks = []
@@ -84,5 +91,8 @@ class BasePredictor(object):
 
         return torch.tensor(total_clicks, device=self.device)
 
-    def _get_clicks_maps(self, clicker):
-        return None
+    def get_states(self):
+        return {'transform_states': self._get_transform_states()}
+
+    def set_states(self, states):
+        self._set_transform_states(states['transform_states'])

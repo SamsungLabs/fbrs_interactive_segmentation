@@ -2,17 +2,13 @@ import tkinter as tk
 from tkinter import messagebox, filedialog, ttk
 
 import cv2
-import torch
 import numpy as np
 from PIL import Image
-from torchvision import transforms
 
+from interactive_demo.canvas import CanvasImage
+from interactive_demo.controller import InteractiveController
 from interactive_demo.wrappers import BoundedNumericalEntry, FocusHorizontalScale, FocusCheckButton, \
     FocusButton, FocusLabelFrame
-from isegm.inference.predictors import get_predictor
-from isegm.utils import vis
-from isegm.inference import clicker
-from interactive_demo.canvas import CanvasImage
 
 
 class InteractiveDemoApp(ttk.Frame):
@@ -30,28 +26,24 @@ class InteractiveDemoApp(ttk.Frame):
         self.brs_modes = ['NoBRS', 'RGB-BRS', 'DistMap-BRS', 'f-BRS-A', 'f-BRS-B', 'f-BRS-C']
         self.limit_longest_size = args.limit_longest_size
 
+        self.controller = InteractiveController(model, args.device,
+                                                predictor_params={'brs_mode': 'NoBRS'},
+                                                update_image_callback=self._update_image)
+
         self._init_state()
         self._add_menu()
         self._add_canvas()
         self._add_buttons()
 
-        self.device = args.device
-        self.net = model.to(self.device)
-        self.predictor = None
-        self.zoomin_params = None
-        self._change_zoomin()
-        master.bind('<space>', lambda event: self._finish_object())
+        master.bind('<space>', lambda event: self.controller.finish_object())
+        master.bind('a', lambda event: self.controller.partially_finish_object())
 
-        self.state['zoomin_params']['skip_clicks'].trace(mode='w', callback=self._change_zoomin)
-        self.state['zoomin_params']['target_size'].trace(mode='w', callback=self._change_zoomin)
-        self.state['zoomin_params']['expansion_ratio'].trace(mode='w', callback=self._change_zoomin)
+        self.state['zoomin_params']['skip_clicks'].trace(mode='w', callback=self._reset_predictor)
+        self.state['zoomin_params']['target_size'].trace(mode='w', callback=self._reset_predictor)
+        self.state['zoomin_params']['expansion_ratio'].trace(mode='w', callback=self._reset_predictor)
         self.state['predictor_params']['net_clicks_limit'].trace(mode='w', callback=self._change_brs_mode)
         self.state['lbfgs_max_iters'].trace(mode='w', callback=self._change_brs_mode)
-
-        self.input_transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize([.485, .456, .406], [.229, .224, .225])
-        ])
+        self._reset_predictor()
 
     def _init_state(self):
         self.state = {
@@ -61,7 +53,6 @@ class InteractiveDemoApp(ttk.Frame):
                 'target_size': tk.IntVar(value=min(480, self.limit_longest_size)),
                 'expansion_ratio': tk.DoubleVar(value=1.4)
             },
-            '_zoomin_history': [],
 
             'predictor_params': {
                 'net_clicks_limit': tk.IntVar(value=8)
@@ -72,33 +63,7 @@ class InteractiveDemoApp(ttk.Frame):
 
             'alpha_blend': tk.DoubleVar(value=0.5),
             'click_radius': tk.IntVar(value=3),
-
-            '_image': None,
-            '_image_nd': None,
-
-            '_pred_probs_history': [],
-            '_object_counter': 0,
-            '_object_masks': [],
-
-            '_clicks_list': [],
-            '_clicker': None,
         }
-
-    def _reset_to_defaults(self):
-        self.state.update({
-            '_zoomin_history': [],
-            '_clicks_list': [],
-            '_pred_probs_history': [],
-        })
-
-        self.state['alpha_blend'].set(0.5)
-        self.state['prob_thresh'].set(0.5)
-
-        if self.state['_clicker'] is not None:
-            self.state['_clicker'].reset_clicks()
-
-        if self.predictor.zoom_in is not None:
-            self.predictor.zoom_in.reset()
 
     def _add_menu(self):
         self.menubar = FocusLabelFrame(self, bd=1)
@@ -133,20 +98,20 @@ class InteractiveDemoApp(ttk.Frame):
         self.clicks_options_frame.pack(side=tk.TOP, fill=tk.X, padx=10, pady=3)
         self.finish_object_button = \
             FocusButton(self.clicks_options_frame, text='Finish\nobject', bg='#b6d7a8', fg='black', width=10, height=2,
-                        state=tk.DISABLED, command=self._finish_object)
+                        state=tk.DISABLED, command=self.controller.finish_object)
         self.finish_object_button.pack(side=tk.LEFT, fill=tk.X, padx=10, pady=3)
         self.undo_click_button = \
             FocusButton(self.clicks_options_frame, text='Undo click', bg='#ffe599', fg='black', width=10, height=2,
-                        state=tk.DISABLED, command=self._undo_click)
+                        state=tk.DISABLED, command=self.controller.undo_click)
         self.undo_click_button.pack(side=tk.LEFT, fill=tk.X, padx=10, pady=3)
         self.reset_clicks_button = \
             FocusButton(self.clicks_options_frame, text='Reset clicks', bg='#ea9999', fg='black', width=10, height=2,
-                        state=tk.DISABLED, command=self._reset_clicks_history)
+                        state=tk.DISABLED, command=self._reset_last_object)
         self.reset_clicks_button.pack(side=tk.LEFT, fill=tk.X, padx=10, pady=3)
 
         self.zoomin_options_frame = FocusLabelFrame(master, text="ZoomIn options")
         self.zoomin_options_frame.pack(side=tk.TOP, fill=tk.X, padx=10, pady=3)
-        FocusCheckButton(self.zoomin_options_frame, text='Use ZoomIn', command=self._change_zoomin,
+        FocusCheckButton(self.zoomin_options_frame, text='Use ZoomIn', command=self._reset_predictor,
                          variable=self.state['zoomin_params']['use_zoom_in']).grid(rowspan=3, column=0, padx=10)
         tk.Label(self.zoomin_options_frame, text="Skip clicks").grid(row=0, column=1, pady=1, sticky='e')
         tk.Label(self.zoomin_options_frame, text="Target size").grid(row=1, column=1, pady=1, sticky='e')
@@ -196,7 +161,6 @@ class InteractiveDemoApp(ttk.Frame):
         FocusHorizontalScale(self.click_radius_frame, from_=0, to=7, resolution=1, command=self._update_click_radius,
                              variable=self.state['click_radius']).pack(padx=10, anchor=tk.CENTER)
 
-    # ================================================= Menu callbacks =================================================
     def _load_image_callback(self):
         self.menubar.focus_set()
         if self._check_entry(self):
@@ -206,26 +170,16 @@ class InteractiveDemoApp(ttk.Frame):
             ], title="Chose an image")
 
             if len(filename) > 0:
-                self.state['_image'] = cv2.cvtColor(cv2.imread(filename), cv2.COLOR_BGR2RGB)
-                self.state['_image_nd'] = self.input_transform(self.state['_image']).to(self.device)
-                self.predictor.set_input_image(self.state['_image_nd'])
-                self.state['_object_counter'] = 0
-                self.state['_clicks_list'] = []
-                self.state['_clicker'] = clicker.Clicker(np.zeros(self.state['_image'].shape[:2], dtype=np.bool))
-                self.state['_pred_probs_history'] = []
-                self.state['_zoomin_history'] = []
-                self.state['_object_masks'] = []
-
-                self._set_click_dependent_widgets_state()
-                self._update_image(reset_canvas=True)
+                image = cv2.cvtColor(cv2.imread(filename), cv2.COLOR_BGR2RGB)
+                self.controller.set_image(image)
 
     def _save_mask_callback(self):
         self.menubar.focus_set()
         if self._check_entry(self):
-            mask = self._get_current_mask()
+            mask = self.controller.result_mask
             if mask is None:
-                # messagebox.showwarning("Can't save an empty mask")
                 return
+
             filename = filedialog.asksaveasfilename(parent=self.master, initialfile='mask.png', filetypes=[
                 ("PNG image", "*.png"),
                 ("BMP image", "*.bmp"),
@@ -233,6 +187,8 @@ class InteractiveDemoApp(ttk.Frame):
             ], title="Save current mask as...")
 
             if len(filename) > 0:
+                if mask.max() < 256:
+                    mask = mask.astype(np.uint8)
                 cv2.imwrite(filename, mask)
 
     def _about_callback(self):
@@ -246,100 +202,24 @@ class InteractiveDemoApp(ttk.Frame):
 
         messagebox.showinfo("About Demo", '\n'.join(text))
 
-    # ================================================ Button callbacks ================================================
-    def _finish_object(self):
-        if len(self.state['_pred_probs_history']) == 0:
-            return
-        current_mask = (self.state['_pred_probs_history'][-1] > self.state['prob_thresh'].get()).astype(np.uint8)
-        current_mask = current_mask * (self.state['_object_counter'] + 1)
-        self.state['_object_masks'].append(current_mask)
+    def _reset_last_object(self):
+        self.state['alpha_blend'].set(0.5)
+        self.state['prob_thresh'].set(0.5)
+        self.controller.reset_last_object()
 
-        self.state['_object_counter'] += 1
-        self.state['_clicks_list'] = []
-        self.state['_clicker'].reset_clicks()
-        self.state['_pred_probs_history'] = []
-        self.state['_zoomin_history'] = []
-
-        self._set_click_dependent_widgets_state()
-        self._update_image()
-        self._reset_predictor()
-
-    def _undo_click(self):
-        self.state['_clicks_list'] = self.state['_clicks_list'][:-1]
-        self.state['_clicker']._remove_last_click()
-        self.state['_pred_probs_history'] = self.state['_pred_probs_history'][:-1]
-        self.state['_zoomin_history'] = self.state['_zoomin_history'][:-1]
-        if len(self.state['_zoomin_history']) > 0:
-            self.predictor.zoom_in._input_image = self.state['_zoomin_history'][-1]['_input_image']
-            self.predictor.zoom_in._prev_probs = self.state['_zoomin_history'][-1]['_prev_probs']
-            self.predictor.zoom_in._object_roi = self.state['_zoomin_history'][-1]['_object_roi']
-            self.predictor.zoom_in._roi_image = self.state['_zoomin_history'][-1]['_roi_image']
-
-        if len(self.state['_clicks_list']) == 0:
-            self._reset_predictor()
-            self._set_click_dependent_widgets_state()
-        self._update_image()
-
-    def _reset_clicks_history(self):
-        self._reset_to_defaults()
-        self._reset_predictor()
-
-        self._set_click_dependent_widgets_state()
-        self._update_image()
-
-    # =============================================== Variable callbacks ===============================================
     def _update_prob_thresh(self, value):
-        if len(self.state['_pred_probs_history']) > 0:
+        if self.controller.is_incomplete_mask:
+            self.controller.prob_thresh = self.state['prob_thresh'].get()
             self._update_image()
 
     def _update_blend_alpha(self, value):
-        if self.state['_image'] is not None and \
-                (len(self.state['_pred_probs_history']) > 0 or self.state['_object_counter'] > 0):
-            self._update_image()
+        self._update_image()
 
     def _update_click_radius(self, *args):
         if self.image_on_canvas is None:
             return
 
         self._update_image()
-
-    def _change_zoomin(self, *args):
-        if self.state['zoomin_params']['use_zoom_in'].get():
-            self.zoomin_params = {
-                'skip_clicks': self.state['zoomin_params']['skip_clicks'].get(),
-                'target_size': self.state['zoomin_params']['target_size'].get(),
-                'expansion_ratio': self.state['zoomin_params']['expansion_ratio'].get()
-            }
-
-            self._reset_predictor()
-
-            if len(self.state['_zoomin_history']) > 0:
-                self.predictor.zoom_in._input_image = self.state['_zoomin_history'][-1]['_input_image']
-                self.predictor.zoom_in._prev_probs = self.state['_zoomin_history'][-1]['_prev_probs']
-                self.predictor.zoom_in._object_roi = self.state['_zoomin_history'][-1]['_object_roi']
-                self.predictor.zoom_in._roi_image = self.state['_zoomin_history'][-1]['_roi_image']
-            elif self.predictor is not None:
-                self.predictor.zoom_in.reset()
-        else:
-            self.zoomin_params = None
-            self._reset_predictor()
-
-    def _reset_predictor(self):
-        brs_mode = self.state['brs_mode'].get()
-        prob_thresh = self.state['prob_thresh'].get()
-        net_clicks_limit = None if brs_mode == 'NoBRS' else self.state['predictor_params']['net_clicks_limit'].get()
-
-        self.predictor = get_predictor(self.net, brs_mode, self.device, prob_thresh=prob_thresh,
-                                       zoom_in_params=self.zoomin_params,
-                                       predictor_params={
-                                           'net_clicks_limit': net_clicks_limit,
-                                           'max_size': self.limit_longest_size
-                                       },
-                                       brs_opt_func_params={'min_iou_diff': 1e-3},
-                                       lbfgs_params={'maxfun': self.state['lbfgs_max_iters'].get()})
-
-        if self.state['_image_nd'] is not None:
-            self.predictor.set_input_image(self.state['_image_nd'])
 
     def _change_brs_mode(self, *args):
         if self.state['brs_mode'].get() == 'NoBRS':
@@ -353,18 +233,34 @@ class InteractiveDemoApp(ttk.Frame):
             self.net_clicks_label.configure(state=tk.NORMAL)
 
         self._reset_predictor()
-        assert len(self.state['_pred_probs_history']) == 0
 
-        self.state.update({
-            '_zoomin_history': [],
-            '_pred_probs_history': [],
-        })
+    def _reset_predictor(self):
+        brs_mode = self.state['brs_mode'].get()
+        prob_thresh = self.state['prob_thresh'].get()
+        net_clicks_limit = None if brs_mode == 'NoBRS' else self.state['predictor_params']['net_clicks_limit'].get()
 
-        if self.state['_clicker'] is not None:
-            self.state['_clicker'].reset_clicks()
-        self.state['_clicks_list'] = []
+        if self.state['zoomin_params']['use_zoom_in'].get():
+            zoomin_params = {
+                'skip_clicks': self.state['zoomin_params']['skip_clicks'].get(),
+                'target_size': self.state['zoomin_params']['target_size'].get(),
+                'expansion_ratio': self.state['zoomin_params']['expansion_ratio'].get()
+            }
+        else:
+            zoomin_params = None
 
-    # ================================================ Canvas callback =================================================
+        predictor_params = {
+            'brs_mode': brs_mode,
+            'prob_thresh': prob_thresh,
+            'zoom_in_params': zoomin_params,
+            'predictor_params': {
+                'net_clicks_limit': net_clicks_limit,
+                'max_size': self.limit_longest_size
+            },
+            'brs_opt_func_params': {'min_iou_diff': 1e-3},
+            'lbfgs_params': {'maxfun': self.state['lbfgs_max_iters'].get()}
+        }
+        self.controller.reset_predictor(predictor_params)
+
     def _click_callback(self, is_positive, x, y):
         self.canvas.focus_set()
 
@@ -373,59 +269,22 @@ class InteractiveDemoApp(ttk.Frame):
             return
 
         if self._check_entry(self):
-            click = clicker.Click(is_positive=is_positive, coords=(y, x))
-
-            self._make_prediction_for_one_click(click)
-            self._set_click_dependent_widgets_state()
-            self._update_image()
-
-    # ================================================= Other routines =================================================
-    def _get_current_mask(self):
-        prob_thresh = self.state['prob_thresh'].get()
-
-        if len(self.state['_pred_probs_history']) > 0:
-            current_mask = (self.state['_pred_probs_history'][-1] > prob_thresh).astype(np.uint8)
-            current_mask = current_mask * (self.state['_object_counter'] + 1)
-            mask = np.stack(self.state['_object_masks'] + [current_mask], axis=0).max(axis=0)
-        elif self.state['_object_counter'] > 0:
-            mask = np.stack(self.state['_object_masks'], axis=0).max(axis=0)
-        else:
-            mask = None
-
-        return mask
+            self.controller.add_click(x, y, is_positive)
 
     def _update_image(self, reset_canvas=False):
-        alpha = self.state['alpha_blend'].get()
-        click_radius = self.state['click_radius'].get()
-
-        mask = self._get_current_mask()
-        image = vis.draw_with_blend_and_clicks(self.state['_image'], mask=mask, alpha=alpha,
-                                               clicks_list=self.state['_clicks_list'], radius=click_radius)
-
+        image = self.controller.get_visualization(alpha_blend=self.state['alpha_blend'].get(),
+                                                  click_radius=self.state['click_radius'].get())
         if self.image_on_canvas is None:
             self.image_on_canvas = CanvasImage(self.canvas_frame, self.canvas)
             self.image_on_canvas.register_click_callback(self._click_callback)
-        self.image_on_canvas.reload_image(Image.fromarray(image), reset_canvas)
 
-    def _make_prediction_for_one_click(self, click):
-        self.state['_clicks_list'].append(click)
-        self.state['_clicker']._add_click(click)
+        self._set_click_dependent_widgets_state()
+        if image is not None:
+            self.image_on_canvas.reload_image(Image.fromarray(image), reset_canvas)
 
-        pred = self.predictor.get_prediction(self.state['_clicker'])
-        if self.state['zoomin_params']['use_zoom_in'].get():
-            self.state['_zoomin_history'].append({
-                '_input_image': self.predictor.zoom_in._input_image,
-                '_prev_probs': self.predictor.zoom_in._prev_probs,
-                '_object_roi': self.predictor.zoom_in._object_roi,
-                '_roi_image': self.predictor.zoom_in._roi_image
-            })
-        torch.cuda.empty_cache()
-        self.state['_pred_probs_history'].append(pred)
-
-    # =========================================== Widget and frame routines ============================================
     def _set_click_dependent_widgets_state(self):
-        after_1st_click_state = tk.DISABLED if len(self.state['_clicks_list']) == 0 else tk.NORMAL
-        before_1st_click_state = tk.DISABLED if len(self.state['_clicks_list']) > 0 else tk.NORMAL
+        after_1st_click_state = tk.NORMAL if self.controller.is_incomplete_mask else tk.DISABLED
+        before_1st_click_state = tk.DISABLED if self.controller.is_incomplete_mask else tk.NORMAL
 
         self.finish_object_button.configure(state=after_1st_click_state)
         self.undo_click_button.configure(state=after_1st_click_state)

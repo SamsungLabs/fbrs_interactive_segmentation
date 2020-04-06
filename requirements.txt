@@ -1,5 +1,6 @@
 scipy
 numpy
+Cython
 scikit-image
 opencv-python-headless
 Pillow

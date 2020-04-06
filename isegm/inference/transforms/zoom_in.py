@@ -1,6 +1,4 @@
-import cv2
 import torch
-import numpy as np
 
 from isegm.inference.clicker import Click
 from isegm.utils.misc import get_bbox_iou, get_bbox_from_mask, expand_bbox, clamp_bbox
@@ -23,30 +21,30 @@ class ZoomIn(BaseTransform):
         self.recompute_thresh_iou = recompute_thresh_iou
         self.prob_thresh = prob_thresh
 
-        self._input_image = None
+        self._input_image_shape = None
         self._prev_probs = None
         self._object_roi = None
         self._roi_image = None
 
-    def transform(self, image_nd, clicks_lists, clicks_maps=None):
+    def transform(self, image_nd, clicks_lists):
         assert image_nd.shape[0] == 1 and len(clicks_lists) == 1
         self.image_changed = False
 
         clicks_list = clicks_lists[0]
         if len(clicks_list) <= self.skip_clicks:
-            return image_nd, clicks_lists, clicks_maps
+            return image_nd, clicks_lists
 
-        self._input_image = image_nd
+        self._input_image_shape = image_nd.shape
 
         current_object_roi = None
         if self._prev_probs is not None:
-            current_pred_mask = (self._prev_probs > self.prob_thresh).detach().cpu().numpy()[0, 0]
+            current_pred_mask = (self._prev_probs > self.prob_thresh)[0, 0]
             if current_pred_mask.sum() > 0:
                 current_object_roi = get_object_roi(current_pred_mask, clicks_list,
                                                     self.expansion_ratio, self.min_crop_size)
 
         if current_object_roi is None:
-            return image_nd, clicks_lists, clicks_maps
+            return image_nd, clicks_lists
 
         update_object_roi = False
         if self._object_roi is None:
@@ -62,12 +60,11 @@ class ZoomIn(BaseTransform):
             self.image_changed = True
 
         tclicks_lists = [self._transform_clicks(clicks_list)]
-        tclicks_maps = self._transform_click_maps(clicks_maps)
-        return self._roi_image, tclicks_lists, tclicks_maps
+        return self._roi_image.to(image_nd.device), tclicks_lists
 
     def inv_transform(self, prob_map):
         if self._object_roi is None:
-            self._prev_probs = prob_map
+            self._prev_probs = prob_map.cpu().numpy()
             return prob_map
 
         assert prob_map.shape[0] == 1
@@ -75,9 +72,13 @@ class ZoomIn(BaseTransform):
         prob_map = torch.nn.functional.interpolate(prob_map, size=(rmax - rmin + 1, cmax - cmin + 1),
                                                    mode='bilinear', align_corners=True)
 
-        new_prob_map = torch.zeros_like(self._prev_probs) if self._prev_probs is not None else prob_map
-        new_prob_map[:, :, rmin:rmax+1, cmin:cmax+1] = prob_map
-        self._prev_probs = new_prob_map
+        if self._prev_probs is not None:
+            new_prob_map = torch.zeros(*self._prev_probs.shape, device=prob_map.device, dtype=prob_map.dtype)
+            new_prob_map[:, :, rmin:rmax + 1, cmin:cmax + 1] = prob_map
+        else:
+            new_prob_map = prob_map
+
+        self._prev_probs = new_prob_map.cpu().numpy()
 
         return new_prob_map
 
@@ -85,17 +86,24 @@ class ZoomIn(BaseTransform):
         if self._prev_probs is None or self._object_roi is not None or self.skip_clicks > 0:
             return False
 
-        pred_mask = (self._prev_probs > self.prob_thresh).asnumpy()[0, 0]
+        pred_mask = (self._prev_probs > self.prob_thresh)[0, 0]
         if pred_mask.sum() > 0:
             possible_object_roi = get_object_roi(pred_mask, [],
                                                  self.expansion_ratio, self.min_crop_size)
-            image_roi = (0, self._input_image[2] - 1, 0, self._input_image[3] - 1)
+            image_roi = (0, self._input_image_shape[2] - 1, 0, self._input_image_shape[3] - 1)
             if get_bbox_iou(possible_object_roi, image_roi) < 0.50:
                 return True
         return False
 
+    def get_state(self):
+        roi_image = self._roi_image.cpu() if self._roi_image is not None else None
+        return self._input_image_shape, self._object_roi, self._prev_probs, roi_image, self.image_changed
+
+    def set_state(self, state):
+        self._input_image_shape, self._object_roi, self._prev_probs, self._roi_image, self.image_changed = state
+
     def reset(self):
-        self._input_image = None
+        self._input_image_shape = None
         self._object_roi = None
         self._prev_probs = None
         self._roi_image = None
@@ -114,30 +122,6 @@ class ZoomIn(BaseTransform):
             new_c = crop_width * (click.coords[1] - cmin) / (cmax - cmin + 1)
             transformed_clicks.append(Click(is_positive=click.is_positive, coords=(new_r, new_c)))
         return transformed_clicks
-
-    def _transform_click_maps(self, clicks_maps):
-        if self._object_roi is None or clicks_maps is None:
-            return clicks_maps
-
-        assert clicks_maps[0].shape[0] == 1
-        rmin, rmax, cmin, cmax = self._object_roi
-        crop_height, crop_width = self._roi_image.shape[2:]
-        pos_maps, neg_maps = clicks_maps
-        pos_maps = pos_maps[:, rmin:rmax+1, cmin:cmax+1]
-        neg_maps = neg_maps[:, rmin:rmax + 1, cmin:cmax + 1]
-
-        if max(pos_maps.shape[1], pos_maps.shape[2]) > max(crop_width, crop_height):
-            interpolation = cv2.INTER_AREA
-        else:
-            interpolation = cv2.INTER_LINEAR
-        pos_maps = cv2.resize(pos_maps[0], dsize=(crop_width, crop_height),
-                              interpolation=interpolation)[np.newaxis, :]
-        neg_maps = cv2.resize(neg_maps[0], dsize=(crop_width, crop_height),
-                              interpolation=interpolation)[np.newaxis, :]
-        pos_maps = pos_maps / (pos_maps.max() + 1e-4)
-        neg_maps = neg_maps / (neg_maps.max() + 1e-4)
-
-        return pos_maps, neg_maps
 
 
 def get_object_roi(pred_mask, clicks_list, expansion_ratio, min_crop_size):
