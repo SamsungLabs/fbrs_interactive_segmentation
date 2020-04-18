@@ -51,6 +51,15 @@ python3 demo.py --checkpoint=/home/demo/fBRS/weights/resnet34_dh128_sbd --limit-
 python3 demo.py --checkpoint=resnet34_dh128_sbd --cpu
 ```
 
+You can also use the docker image to run the demo. For this you need to activate X-host connection and then run the container with some additional flags like the following example:
+
+```
+# activate xhost
+xhost +
+# run the container,
+docker run -v "$PWD":/tmp/ -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY <id-or-tag-docker-built-image> python3 demo.py --checkpoint resnet34_dh128_sbd --cpu
+```
+
 #### Controls:
 * press left and right mouse buttons for positive and negative clicks, respectively;
 * scroll wheel to zoom in and out;
