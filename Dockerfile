@@ -1,7 +1,6 @@
 FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
 
-# set timezone for tzdata installation (used in python-tk)
-RUN ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
