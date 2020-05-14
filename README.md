@@ -1,9 +1,4 @@
-## f-BRS: Rethinking Backpropagating Refinement for Interactive Segmentation [[Paper]](https://arxiv.org/abs/2001.10331) [[PyTorch]](https://github.com/saic-vul/fbrs_interactive_segmentation/tree/master) [[MXNet]](https://github.com/saic-vul/fbrs_interactive_segmentation/tree/mxnet)
-
-<p align="center">
-  <img src="./images/fbrs_animation.gif" alt="drawing", width="360"/>
-  <img src="./images/fbrs_interactive_demo.gif" alt="drawing", width="470"/>
-</p>
+## f-BRS: Rethinking Backpropagating Refinement for Interactive Segmentation [[Paper]](https://arxiv.org/abs/2001.10331) [[PyTorch]](https://github.com/saic-vul/fbrs_interactive_segmentation/tree/master) [[MXNet]](https://github.com/saic-vul/fbrs_interactive_segmentation/tree/mxnet) [[Video]](https://youtu.be/ArcZ5xtyMCk)
 
 This repository provides code for training and testing state-of-the-art models for interactive segmentation with the official PyTorch implementation of the following paper:
 
@@ -11,8 +6,13 @@ This repository provides code for training and testing state-of-the-art models f
 > [Konstantin Sofiiuk](https://github.com/ksofiyuk), [Ilia Petrov](https://github.com/ptrvilya), [Olga Barinova](https://github.com/OlgaBarinova), [Anton Konushin](https://scholar.google.com/citations?user=ZT_k-wMAAAAJ)<br>
 > Samsung AI Center Moscow <br>
 > https://arxiv.org/abs/2001.10331
->
-> **Abstract:** *Deep neural networks have become a mainstream approach to interactive segmentation. As we show in our experiments, while for some images a trained network provides accurate segmentation result with just a few clicks, for some unknown objects it cannot achieve satisfactory result even with a large amount of user input. Recently proposed backpropagating refinement (BRS) scheme introduces an optimization problem for interactive segmentation that results in significantly better performance for the hard cases. At the same time, BRS requires running forward and backward pass through a deep network several times that leads to significantly increased computational budget per click compared to other methods. We propose f-BRS (feature backpropagating refinement scheme) that solves an optimization problem with respect to auxiliary variables instead of the network inputs, and requires running forward and backward pass just for a small part of a network. Experiments on GrabCut, Berkeley, DAVIS and SBD datasets set new state-of-the-art at an order of magnitude lower time per click compared to original BRS.*
+
+Please see [the video](https://youtu.be/ArcZ5xtyMCk) below explaining how our algorithm works:
+<p align="center">
+  <a href="https://youtu.be/ArcZ5xtyMCk">
+  <img src="./images/fbrs_video_preview.gif" alt="drawing" width="70%"/>
+  </a>
+</p>
 
 We also have full MXNet implementation of our algorithm, you can check [mxnet branch](https://github.com/saic-vul/fbrs_interactive_segmentation/tree/mxnet).
 
@@ -62,6 +62,10 @@ docker run -v "$PWD":/tmp/ \
            -e DISPLAY=$DISPLAY <id-or-tag-docker-built-image> \
            python3 demo.py --checkpoint resnet34_dh128_sbd --cpu
 ```
+
+<p align="center">
+  <img src="./images/fbrs_interactive_demo.gif" alt="drawing", width="480"/>
+</p>
 
 #### Controls:
 * press left and right mouse buttons for positive and negative clicks, respectively;
