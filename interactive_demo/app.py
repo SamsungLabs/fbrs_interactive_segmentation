@@ -24,7 +24,7 @@ class InteractiveDemoApp(ttk.Frame):
         self.pack(fill="both", expand=True)
         self.filename = ''
         self.filenames = []
-        self.currentFileIndex = 0
+        self.current_file_index = 0
 
         self.brs_modes = ['NoBRS', 'RGB-BRS', 'DistMap-BRS', 'f-BRS-A', 'f-BRS-B', 'f-BRS-C']
         self.limit_longest_size = args.limit_longest_size
@@ -40,8 +40,8 @@ class InteractiveDemoApp(ttk.Frame):
 
         master.bind('<space>', lambda event: self.controller.finish_object())
         master.bind('a', lambda event: self.controller.partially_finish_object())
-        master.bind('<Key-Right>', self._setNextImage)
-        master.bind('<Key-Left>', self._setForwardImage)
+        master.bind('<Key-Right>', self._set_next_image)
+        master.bind('<Key-Left>', self._set_forward_image)
         master.bind('<Control-Key-s>', self._save_mask_force)
 
         self.state['zoomin_params']['skip_clicks'].trace(mode='w', callback=self._reset_predictor)
@@ -167,15 +167,15 @@ class InteractiveDemoApp(ttk.Frame):
         FocusHorizontalScale(self.click_radius_frame, from_=0, to=7, resolution=1, command=self._update_click_radius,
                              variable=self.state['click_radius']).pack(padx=10, anchor=tk.CENTER)
 
-    def _setNextImage(self, event):
-        if self.currentFileIndex < len(self.filenames):
-            self.currentFileIndex += 1
-            self._setImage(self.currentFileIndex)
-        
-    def _setForwardImage(self, event):
-        if self.currentFileIndex > 0:
-            self.currentFileIndex -= 1
-            self._setImage(self.currentFileIndex)
+    def _set_next_image(self, event):
+        if self.current_file_index < len(self.filenames):
+            self.current_file_index += 1
+            self._set_image(self.current_file_index)
+
+    def _set_forward_image(self, event):
+        if self.current_file_index > 0:
+            self.current_file_index -= 1
+            self._set_image(self.current_file_index)
 
     def _save_mask_force(self, event):
         self.menubar.focus_set()
@@ -185,9 +185,9 @@ class InteractiveDemoApp(ttk.Frame):
                 return
             if mask.max() < 256:
                 mask = mask.astype(np.uint8)
-            cv2.imwrite('{}.png'.format(self.filenames[self.currentFileIndex]), mask)
+            cv2.imwrite('{}.png'.format(self.filenames[self.current_file_index]), mask)
 
-    def _setImage(self, value):
+    def _set_image(self, value):
         image = cv2.cvtColor(cv2.imread(self.filenames[value]), cv2.COLOR_BGR2RGB)
         self.filename = os.path.basename(self.filenames[value])
         self.controller.set_image(image)
@@ -200,7 +200,7 @@ class InteractiveDemoApp(ttk.Frame):
                 ("All files", "*.*"),
             ], title="Chose an image")
             if len(self.filenames) > 0:
-                self._setImage(0)
+                self._set_image(0)
 
     def _save_mask_callback(self):
         self.menubar.focus_set()
