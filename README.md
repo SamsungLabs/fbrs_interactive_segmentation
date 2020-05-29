@@ -57,7 +57,7 @@ You can also use the docker image to run the demo. For this you need to activate
 # activate xhost
 xhost +
 
-docker run -v "$PWD":/tmp/ \ 
+docker run -v "$PWD":/tmp/ \
            -v /tmp/.X11-unix:/tmp/.X11-unix \
            -e DISPLAY=$DISPLAY <id-or-tag-docker-built-image> \
            python3 demo.py --checkpoint resnet34_dh128_sbd --cpu
@@ -67,11 +67,18 @@ docker run -v "$PWD":/tmp/ \
   <img src="./images/fbrs_interactive_demo.gif" alt="drawing", width="480"/>
 </p>
 
+#### Multiple file select:
+<p align="center">
+  <img src="./images/fbrs_interactive_demo_multiple_file.gif" alt="drawing", width="480"/>
+</p>
+
 #### Controls:
 * press left and right mouse buttons for positive and negative clicks, respectively;
 * scroll wheel to zoom in and out;
 * hold right mouse button and drag to move around an image (you can also use arrows and WASD);
 * press space to finish the current object.
+* when multiple files are open, pressing the left arrow key displays the previous image, and pressing the right arrow key displays the next image.
+* Use Ctrl+s to save the annotation you're currently editing. ("original file name".png)
 
 #### Interactive segmentation options:
 * ZoomIn (can be turned on/off using the checkbox)
@@ -80,7 +87,7 @@ docker run -v "$PWD":/tmp/ \
     * *Expand ratio* - object bbox is rescaled with this ratio before crop.
 * BRS parameters (BRS type can be changed using the dropdown menu)
     * *Network clicks* - the number of first clicks that are included in the network's input. Subsequent clicks are processed only using BRS  (NoBRS ignores this option).
-    * *L-BFGS-B max iterations* - the maximum number of function evaluation for each step of optimization in BRS (increase for better accuracy and longer computational time for each click).  
+    * *L-BFGS-B max iterations* - the maximum number of function evaluation for each step of optimization in BRS (increase for better accuracy and longer computational time for each click).
 * Visualisation parameters
     * *Prediction threshold* slider adjusts the threshold for binarization of probability map for the current object.
     * *Alpha blending coefficient* slider adjusts the intensity of all predicted masks.
@@ -193,7 +200,7 @@ You can find model weights and test results in the tables below:
     <td>NoC<br>85%</td>
     <td>NoC<br>90%</td>
   </tr>
-  
+
   <tr>
     <td rowspan="2">ResNet-34<br>(SBD)</td>
     <td>RGB-BRS</td>
