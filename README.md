@@ -67,10 +67,6 @@ docker run -v "$PWD":/tmp/ \
   <img src="./images/fbrs_interactive_demo.gif" alt="drawing", width="480"/>
 </p>
 
-#### Multiple file select:
-<p align="center">
-  <img src="./images/fbrs_interactive_demo_multiple_file.gif" alt="drawing", width="480"/>
-</p>
 
 #### Controls:
 * press left and right mouse buttons for positive and negative clicks, respectively;
