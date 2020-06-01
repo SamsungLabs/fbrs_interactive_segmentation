@@ -72,9 +72,9 @@ docker run -v "$PWD":/tmp/ \
 * press left and right mouse buttons for positive and negative clicks, respectively;
 * scroll wheel to zoom in and out;
 * hold right mouse button and drag to move around an image (you can also use arrows and WASD);
-* press space to finish the current object.
-* when multiple files are open, pressing the left arrow key displays the previous image, and pressing the right arrow key displays the next image.
-* Use Ctrl+s to save the annotation you're currently editing. ("original file name".png)
+* press space to finish the current object;
+* when multiple files are open, pressing the left arrow key displays the previous image, and pressing the right arrow key displays the next image;
+* use Ctrl+S to save the annotation you're currently editing ("original file name".png).
 
 #### Interactive segmentation options:
 * ZoomIn (can be turned on/off using the checkbox)
