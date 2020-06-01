@@ -4,12 +4,12 @@ from tkinter import messagebox, filedialog, ttk
 import cv2
 import numpy as np
 from PIL import Image
+import os
 
 from interactive_demo.canvas import CanvasImage
 from interactive_demo.controller import InteractiveController
 from interactive_demo.wrappers import BoundedNumericalEntry, FocusHorizontalScale, FocusCheckButton, \
     FocusButton, FocusLabelFrame
-
 
 class InteractiveDemoApp(ttk.Frame):
     def __init__(self, master, args, model):
@@ -22,6 +22,9 @@ class InteractiveDemoApp(ttk.Frame):
         y = (master.winfo_screenheight() - master.winfo_reqheight()) / 2
         master.geometry("+%d+%d" % (x, y))
         self.pack(fill="both", expand=True)
+        self.filename = ''
+        self.filenames = []
+        self.current_file_index = 0
 
         self.brs_modes = ['NoBRS', 'RGB-BRS', 'DistMap-BRS', 'f-BRS-A', 'f-BRS-B', 'f-BRS-C']
         self.limit_longest_size = args.limit_longest_size
@@ -37,6 +40,9 @@ class InteractiveDemoApp(ttk.Frame):
 
         master.bind('<space>', lambda event: self.controller.finish_object())
         master.bind('a', lambda event: self.controller.partially_finish_object())
+        master.bind('<Key-Right>', self._set_next_image)
+        master.bind('<Key-Left>', self._set_forward_image)
+        master.bind('<Control-Key-s>', self._save_mask_force)
 
         self.state['zoomin_params']['skip_clicks'].trace(mode='w', callback=self._reset_predictor)
         self.state['zoomin_params']['target_size'].trace(mode='w', callback=self._reset_predictor)
@@ -161,17 +167,40 @@ class InteractiveDemoApp(ttk.Frame):
         FocusHorizontalScale(self.click_radius_frame, from_=0, to=7, resolution=1, command=self._update_click_radius,
                              variable=self.state['click_radius']).pack(padx=10, anchor=tk.CENTER)
 
+    def _set_next_image(self, event):
+        if self.current_file_index < len(self.filenames):
+            self.current_file_index += 1
+            self._set_image(self.current_file_index)
+
+    def _set_forward_image(self, event):
+        if self.current_file_index > 0:
+            self.current_file_index -= 1
+            self._set_image(self.current_file_index)
+
+    def _save_mask_force(self, event):
+        self.menubar.focus_set()
+        if self._check_entry(self):
+            mask = self.controller.result_mask
+            if mask is None:
+                return
+            if mask.max() < 256:
+                mask = mask.astype(np.uint8)
+            cv2.imwrite('{}.png'.format(self.filenames[self.current_file_index]), mask)
+
+    def _set_image(self, value):
+        image = cv2.cvtColor(cv2.imread(self.filenames[value]), cv2.COLOR_BGR2RGB)
+        self.filename = os.path.basename(self.filenames[value])
+        self.controller.set_image(image)
+
     def _load_image_callback(self):
         self.menubar.focus_set()
         if self._check_entry(self):
-            filename = filedialog.askopenfilename(parent=self.master, filetypes=[
-                ("Images", "*.jpg *.jpeg *.png *.bmp *.tiff"),
+            self.filenames = filedialog.askopenfilenames(parent=self.master, filetypes=[
+                ("Images", "*.jpg *.JPG *.jpeg *.png *.bmp *.tiff"),
                 ("All files", "*.*"),
             ], title="Chose an image")
-
-            if len(filename) > 0:
-                image = cv2.cvtColor(cv2.imread(filename), cv2.COLOR_BGR2RGB)
-                self.controller.set_image(image)
+            if len(self.filenames) > 0:
+                self._set_image(0)
 
     def _save_mask_callback(self):
         self.menubar.focus_set()
@@ -180,7 +209,7 @@ class InteractiveDemoApp(ttk.Frame):
             if mask is None:
                 return
 
-            filename = filedialog.asksaveasfilename(parent=self.master, initialfile='mask.png', filetypes=[
+            filename = filedialog.asksaveasfilename(parent=self.master, initialfile='{}.png'.format(self.filename), filetypes=[
                 ("PNG image", "*.png"),
                 ("BMP image", "*.bmp"),
                 ("All files", "*.*"),
