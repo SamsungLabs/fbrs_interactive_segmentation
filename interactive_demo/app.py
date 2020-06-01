@@ -220,9 +220,6 @@ class InteractiveDemoApp(ttk.Frame):
                     mask = mask.astype(np.uint8)
                 cv2.imwrite(filename, mask)
 
-
-
-
     def _about_callback(self):
         self.menubar.focus_set()
 
