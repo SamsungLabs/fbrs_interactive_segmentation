@@ -208,6 +208,8 @@ class InteractiveDemoApp(ttk.Frame):
             mask = self.controller.result_mask
             if mask is None:
                 return
+            if 0 < mask.max() < 256:
+                mask *= 255 // mask.max()
 
             filename = filedialog.asksaveasfilename(parent=self.master, initialfile='{}.png'.format(self.filename), filetypes=[
                 ("PNG image", "*.png"),
