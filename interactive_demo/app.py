@@ -205,7 +205,7 @@ class InteractiveDemoApp(ttk.Frame):
     def _save_mask_callback(self):
         self.menubar.focus_set()
         if self._check_entry(self):
-            mask = self.controller.result_mask
+            mask = self.controller.result_mask * 255
             if mask is None:
                 return
 
