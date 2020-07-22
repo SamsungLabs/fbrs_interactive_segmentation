@@ -277,6 +277,7 @@ class ISTrainer(object):
         num_masks = points.shape[0]
         gt_masks = np.squeeze(gt_instance_masks[:num_masks], axis=1)
         predicted_masks = np.squeeze(predicted_instance_masks[:num_masks], axis=1)
+        image = image[:, :, ::-1]
 
         viz_image = []
         for gt_mask, point, predicted_mask in zip(gt_masks, points, predicted_masks):
@@ -291,7 +292,7 @@ class ISTrainer(object):
         viz_image = np.vstack(viz_image)
 
         result = viz_image.astype(np.uint8)
-        _save_image('instance_segmentation', result[:, :, ::-1])
+        _save_image('instance_segmentation', result)
 
     def _load_weights(self):
         if self.cfg.weights is not None:
