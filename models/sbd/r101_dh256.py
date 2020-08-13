@@ -11,7 +11,7 @@ from albumentations import (
 
 from isegm.engine.trainer import ISTrainer
 from isegm.model.is_deeplab_model import get_deeplab_model
-from isegm.model.losses import SigmoidBinaryCrossEntropyLoss
+from isegm.model.losses import NormalizedFocalLossSigmoid
 from isegm.model.metrics import AdaptiveIoU
 from isegm.data.sbd import SBDDataset
 from isegm.data.points_sampler import MultiPointSampler
@@ -56,7 +56,7 @@ def train(model, cfg, model_cfg, start_epoch=0):
     crop_size = model_cfg.crop_size
 
     loss_cfg = edict()
-    loss_cfg.instance_loss = SigmoidBinaryCrossEntropyLoss()
+    loss_cfg.instance_loss = NormalizedFocalLossSigmoid(alpha=0.5, gamma=2)
     loss_cfg.instance_loss_weight = 1.0
 
     num_epochs = 120
