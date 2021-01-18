@@ -140,37 +140,37 @@ You can find model weights and test results in the tables below:
   <tr>
     <td>ResNet-34</td>
     <td>SBD</td>
-    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/resnet34_dh128_sbd.pth">resnet34_dh128_sbd.pth (Google Drive, 89 MB)</a></td>
+    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/resnet34_dh128_sbd.pth">resnet34_dh128_sbd.pth (GitHub, 89 MB)</a></td>
   </tr>
   <tr>
     <td>ResNet-50</td>
     <td>SBD</td>
-    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/resnet50_dh128_sbd.pth">resnet50_dh128_sbd.pth (Google Drive, 120 MB)</a></td>
+    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/resnet50_dh128_sbd.pth">resnet50_dh128_sbd.pth (GitHub, 120 MB)</a></td>
   </tr>
   <tr>
     <td>ResNet-101</td>
     <td>SBD</td>
-    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/resnet101_dh256_sbd.pth">resnet101_dh256_sbd.pth (Google Drive, 223 MB)</a></td>
+    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/resnet101_dh256_sbd.pth">resnet101_dh256_sbd.pth (GitHub, 223 MB)</a></td>
   </tr>
   <tr>
     <td>HRNetV2-W18+OCR</td>
     <td>SBD</td>
-    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/hrnet18_ocr64_sbd.pth">hrnet18_ocr64_sbd.pth (Google Drive, 39 MB)</a></td>
+    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/hrnet18_ocr64_sbd.pth">hrnet18_ocr64_sbd.pth (GitHub, 39 MB)</a></td>
   </tr>
   <tr>
     <td>HRNetV2-W32+OCR</td>
     <td>SBD</td>
-    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/hrnet32_ocr128_sbd.pth">hrnet32_ocr128_sbd.pth (Google Drive, 119 MB)</a></td>
+    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/hrnet32_ocr128_sbd.pth">hrnet32_ocr128_sbd.pth (GitHub, 119 MB)</a></td>
   </tr>
   <tr>
     <td>ResNet-50</td>
     <td>COCO+LVIS</td>
-    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/resnet50_dh128_lvis.pth">resnet50_dh128_lvis.pth (Google Drive, 120 MB)</a></td>
+    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/resnet50_dh128_lvis.pth">resnet50_dh128_lvis.pth (GitHub, 120 MB)</a></td>
   </tr>
   <tr>
     <td>HRNetV2-W32+OCR</td>
     <td>COCO+LVIS</td>
-    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/hrnet32_ocr128_lvis.pth">hrnet32_ocr128_lvis.pth (Google Drive, 119 MB)</a></td>
+    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/hrnet32_ocr128_lvis.pth">hrnet32_ocr128_lvis.pth (GitHub, 119 MB)</a></td>
   </tr>
 </table>
 
