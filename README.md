@@ -91,11 +91,11 @@ To construct COCO_MVal dataset we sample 800 object instances from the validatio
 |DAVIS    |  345 images with one object each  |  [DAVIS.zip (43 MB)][DAVIS]       |
 |COCO_MVal | 800 images with 800 instances | [COCO_MVal.zip (127 MB)][COCO_MVal] |
 
-[GrabCut]: https://drive.google.com/open?id=1Jh9_6nv7lLNJG5ZZNPAy30HUVpYEoVHT
-[Berkeley]: https://drive.google.com/open?id=18zG8WOSlYRLuW94RGir1CCSUAcruw7rw
-[DAVIS]: https://drive.google.com/open?id=1DGLWvTFgkCHsWildp-gPSxFrtwwT0BrJ
+[GrabCut]: https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/GrabCut.zip
+[Berkeley]: https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/Berkeley.zip
+[DAVIS]: https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/DAVIS.zip
 [SBD]: http://home.bharathh.info/pubs/codes/SBD/download.html
-[COCO_MVal]: https://drive.google.com/open?id=1JYyJ7Sef30yLPAJBU5VwomZoE3Pt6fTj
+[COCO_MVal]: https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/COCO_MVal.zip
 
 Don't forget to change the paths to the datasets in [config.yml](config.yml) after downloading and unpacking.
 
@@ -115,22 +115,22 @@ You can find model weights and test results in the tables below:
   <tr>
     <td>ResNet-34</td>
     <td>SBD</td>
-    <td><a href="https://drive.google.com/open?id=1pUOF14S5VJopXhx1ZiZRecheY7ayE22y">resnet34_dh128_sbd.params (89 MB)</a></td>
+    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/resnet34_dh128_sbd.params">resnet34_dh128_sbd.params (GitHub, 89 MB)</a></td>
   </tr>
   <tr>
     <td>ResNet-50</td>
     <td>SBD</td>
-    <td><a href="https://drive.google.com/open?id=10FfKNljQUvNWY4LQPOoXuoN2WISF1A6i">resnet50_dh128_sbd.params (120 MB)</a></td>
+    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/resnet50_dh128_sbd.params">resnet50_dh128_sbd.params (GitHub, 120 MB)</a></td>
   </tr>
   <tr>
     <td>ResNet-101</td>
     <td>SBD</td>
-    <td><a href="https://drive.google.com/open?id=1qBJMhIw50gtTNBV044jQ_NSn-T5G56A8">resnet101_dh256_sbd.params (223 MB)</a></td>
+    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/resnet101_dh256_sbd.params">resnet101_dh256_sbd.params (GitHub, 223 MB)</a></td>
   </tr>
   <tr>
     <td>ResNet-50</td>
     <td>COCO+LVIS</td>
-    <td><a href="https://drive.google.com/open?id=11n8oUmd7wSCvAKRe3yV4u6ZcS0eoOroM">resnet50_dh128_lvis.params (120 MB)</a></td>
+    <td><a href="https://github.com/saic-vul/fbrs_interactive_segmentation/releases/download/v1.0/resnet50_dh128_lvis.params">resnet50_dh128_lvis.params (GitHub, 120 MB)</a></td>
   </tr>
 </table>
 
