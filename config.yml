@@ -1,11 +1,11 @@
 INTERACTIVE_MODELS_PATH: "./weights"
 EXPS_PATH: "./experiments"
 
-GRABCUT_PATH: "/datasets/InteractiveSegmentation/GrabCut"
-BERKELEY_PATH: "/datasets/InteractiveSegmentation/Berkeley"
-DAVIS_PATH: "/datasets/InteractiveSegmentation/DAVIS"
-SBD_PATH: "/datasets/InteractiveSegmentation/SBD"
-COCO_MVAL_PATH: "/datasets/InteractiveSegmentation/COCO_MVal"
+GRABCUT_PATH: "./datasets/GrabCut"
+BERKELEY_PATH: "./datasets/Berkeley"
+DAVIS_PATH: "./datasets/DAVIS"
+SBD_PATH: "./datasets/SBD"
+COCO_MVAL_PATH: "./datasets/COCO_MVal"
 
 # You can download the weights for HRNet from the repository:
 # https://github.com/HRNet/HRNet-Image-Classification

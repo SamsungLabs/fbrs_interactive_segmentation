@@ -2,6 +2,7 @@
 experiments
 pretrained_models
 weights
+datasets
 *.so
 *.ipynb_checkpoints*
 *.json

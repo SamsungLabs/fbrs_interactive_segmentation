@@ -433,6 +433,7 @@ python3 scripts/evaluate_model.py DistMap-BRS --checkpoint=resnet101_dh256_sbd -
 ```
 
 ### Jupyter notebook
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/saic-vul/fbrs_interactive_segmentation/blob/master/notebooks/colab_test_any_model.ipynb)
 
 You can also interactively experiment with our models using [test_any_model.ipynb](./notebooks/test_any_model.ipynb) Jupyter notebook.
 
