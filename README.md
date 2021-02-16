@@ -16,6 +16,9 @@ Please see [the video](https://youtu.be/ArcZ5xtyMCk) below explaining how our al
 
 We also have full MXNet implementation of our algorithm, you can check [mxnet branch](https://github.com/saic-vul/fbrs_interactive_segmentation/tree/mxnet).
 
+## News
+* [2021-02-16] We have presented a new paper (+code) on interactive segmentation: [Reviving Iterative Training with Mask Guidance for Interactive Segmentation](https://github.com/saic-vul/ritm_interactive_segmentation). A simpler approach with new SoTA results and without any test-time optimization techniques.
+
 ## Setting up an environment
 
 This framework is built using Python 3.6 and relies on the PyTorch 1.4.0+. The following command installs all necessary packages:
