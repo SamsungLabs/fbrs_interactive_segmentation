@@ -1,7 +1,8 @@
 *__pycache__*
 experiments
 pretrained_models
-weights
+weights/.
+test
 datasets
 *.so
 *.ipynb_checkpoints*

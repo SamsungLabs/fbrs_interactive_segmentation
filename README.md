@@ -1,3 +1,41 @@
+## This Fork
+
+This fork makes the f-BRS library easier to work with for your own application. Here are the steps to use it:
+
+Clone this repository to your workspace:
+
+```bash
+git clone https://github.com/cviss-lab/fbrs_interactive_segmentation.git
+```
+
+Then set up the environment. This framework is built using Python 3.6 and relies on the PyTorch 1.4.0+. CUDA is optional but highly recommended. The following command installs all necessary packages:
+
+```.bash
+pip3 install -r requirements.txt
+```
+
+In your own project, insert the following code to interactively segment an image. You must specify the image coordinates and type of seed points (positive or negative).
+
+```python
+import sys
+sys.path.append('./fbrs_interactive_segmentation') # append system path to library
+from fbrs_interactive_segmentation import fbrs_predict # import library to your project
+
+checkpoint = 'resnet34_dh128_sbd' # Download a pretrained model from below, and place it in the weights folder in this library
+engine = fbrs_predict.fbrs_engine(checkpoint) # Initialize model
+image = cv2.imread('path-to-image') # Load image (make sure to downscale image first to remove high frequency components)
+x_coord = [] # x image coordinates seed pts
+y_coord = [] # y image coordinates seed pts
+is_pos = []  # Either 1 or 0 for + or - seed pts
+mask_pred = engine.predict(x_coord, y_coord, is_pos, image) # Get segmentation mask
+```
+
+The file demo.py shows an example of how to use this library. 
+
+If the pretrained models are not sufficient, consider using the tools in the original fork to train a .pth model using your own data/parameters.
+
+
+
 ## f-BRS: Rethinking Backpropagating Refinement for Interactive Segmentation [[Paper]](https://arxiv.org/abs/2001.10331) [[PyTorch]](https://github.com/saic-vul/fbrs_interactive_segmentation/tree/master) [[MXNet]](https://github.com/saic-vul/fbrs_interactive_segmentation/tree/mxnet) [[Video]](https://youtu.be/ArcZ5xtyMCk)
 
 This repository provides code for training and testing state-of-the-art models for interactive segmentation with the official PyTorch implementation of the following paper:
@@ -19,82 +57,6 @@ We also have full MXNet implementation of our algorithm, you can check [mxnet br
 ## News
 * [2021-02-16] We have presented a new paper (+code) on interactive segmentation: [Reviving Iterative Training with Mask Guidance for Interactive Segmentation](https://github.com/saic-vul/ritm_interactive_segmentation). A simpler approach with new SoTA results and without any test-time optimization techniques.
 
-## Setting up an environment
-
-This framework is built using Python 3.6 and relies on the PyTorch 1.4.0+. The following command installs all necessary packages:
-
-```.bash
-pip3 install -r requirements.txt
-```
-
-You can also use our [Dockerfile](./Dockerfile) to build a container with configured environment.
-
-If you want to run training or testing, you must configure the paths to the datasets in [config.yml](config.yml) (SBD for training and testing, GrabCut, Berkeley, DAVIS and COCO_MVal for testing only).
-
-## Interactive Segmentation Demo
-
-<p align="center">
-  <img src="./images/demo_gui.jpg" alt="drawing" width="99%"/>
-</p>
-
-The GUI is based on TkInter library and it's Python bindings. You can try an interactive demo with any of [provided models](#pretrained-models) (see section [below](#pretrained-models)). Our scripts automatically detect the architecture of the loaded model, just specify the path to the corresponding checkpoint.
-
-Examples of the script usage:
-
-```.bash
-# This command runs interactive demo with ResNet-34 model from cfg.INTERACTIVE_MODELS_PATH on GPU with id=0
-# --checkpoint can be relative to cfg.INTERACTIVE_MODELS_PATH or absolute path to the checkpoint
-python3 demo.py --checkpoint=resnet34_dh128_sbd --gpu=0
-
-# This command runs interactive demo with ResNet-34 model from /home/demo/fBRS/weights/
-# If you also do not have a lot of GPU memory, you can reduce --limit-longest-size (default=800)
-python3 demo.py --checkpoint=/home/demo/fBRS/weights/resnet34_dh128_sbd --limit-longest-size=400
-
-# You can try the demo in CPU only mode
-python3 demo.py --checkpoint=resnet34_dh128_sbd --cpu
-```
-
-You can also use the docker image to run the demo. For this you need to activate X-host connection and then run the container with some additional flags:
-
-```.bash
-# activate xhost
-xhost +
-
-docker run -v "$PWD":/tmp/ \
-           -v /tmp/.X11-unix:/tmp/.X11-unix \
-           -e DISPLAY=$DISPLAY <id-or-tag-docker-built-image> \
-           python3 demo.py --checkpoint resnet34_dh128_sbd --cpu
-```
-
-<p align="center">
-  <img src="./images/fbrs_interactive_demo.gif" alt="drawing", width="480"/>
-</p>
-
-
-#### Controls:
-* press left and right mouse buttons for positive and negative clicks, respectively;
-* scroll wheel to zoom in and out;
-* hold right mouse button and drag to move around an image (you can also use arrows and WASD);
-* press space to finish the current object;
-* when multiple files are open, pressing the left arrow key displays the previous image, and pressing the right arrow key displays the next image;
-* use Ctrl+S to save the annotation you're currently editing ("original file name".png).
-
-#### Interactive segmentation options:
-* ZoomIn (can be turned on/off using the checkbox)
-    * *Skip clicks* - the number of clicks to skip before using ZoomIn.
-    * *Target size* - ZoomIn crop is resized so its longer side matches this value (increase for large objects).
-    * *Expand ratio* - object bbox is rescaled with this ratio before crop.
-* BRS parameters (BRS type can be changed using the dropdown menu)
-    * *Network clicks* - the number of first clicks that are included in the network's input. Subsequent clicks are processed only using BRS  (NoBRS ignores this option).
-    * *L-BFGS-B max iterations* - the maximum number of function evaluation for each step of optimization in BRS (increase for better accuracy and longer computational time for each click).
-* Visualisation parameters
-    * *Prediction threshold* slider adjusts the threshold for binarization of probability map for the current object.
-    * *Alpha blending coefficient* slider adjusts the intensity of all predicted masks.
-    * *Visualisation click radius* slider adjusts the size of red and green dots depicting clicks.
-
-<p align="center">
-  <img src="./images/fbrs_dextr_comparison.gif" alt="drawing" width="95%"/>
-</p>
 
 ## Datasets
 
@@ -125,7 +87,7 @@ To construct COCO_MVal dataset we sample 800 object instances from the validatio
 
 Don't forget to change the paths to the datasets in [config.yml](config.yml) after downloading and unpacking.
 
-## Testing
+## Weights
 
 ### Pretrained models
 We provide pretrained models with different backbones for interactive segmentation. The evaluation results are different from the ones presented in our paper, because we have retrained all models on the new codebase presented in this repository. We greatly accelerated the inference of the RGB-BRS algorithm - now it works from 2.5 to 4 times faster on SBD dataset compared to the timings given in the paper. Nevertheless, the new results sometimes are even better.
@@ -199,7 +161,6 @@ You can find model weights and test results in the tables below:
     <td>NoC<br>85%</td>
     <td>NoC<br>90%</td>
   </tr>
-
   <tr>
     <td rowspan="2">ResNet-34<br>(SBD)</td>
     <td>RGB-BRS</td>
@@ -408,60 +369,6 @@ You can find model weights and test results in the tables below:
   </tr>
 
 </table>
-
-
-### Evaluation
-
-We provide the script to test all the presented models in all possible configurations on GrabCut, Berkeley, DAVIS, COCO_MVal and SBD datasets. To test a model, you should download its weights and put it in `./weights` folder (you can change this path in the [config.yml](config.yml), see `INTERACTIVE_MODELS_PATH` variable). To test any of our models, just specify the path to the corresponding checkpoint. Our scripts automatically detect the architecture of the loaded model.
-
-The following command runs the model evaluation (other options are displayed using '-h'):
-
-```.bash
-python3 scripts/evaluate_model.py <brs-mode> --checkpoint=<checkpoint-name>
-```
-
-Examples of the script usage:
-```.bash
-# This command evaluates ResNet-34 model in f-BRS-B mode on all Datasets.
-python3 scripts/evaluate_model.py f-BRS-B --checkpoint=resnet34_dh128_sbd
-
-# This command evaluates HRNetV2-W32+OCR model in f-BRS-B mode on all Datasets.
-python3 scripts/evaluate_model.py f-BRS-B --checkpoint=hrnet32_ocr128_sbd
-
-# This command evaluates ResNet-50 model in RGB-BRS mode on GrabCut and Berkeley datasets.
-python3 scripts/evaluate_model.py RGB-BRS --checkpoint=resnet50_dh128_sbd --datasets=GrabCut,Berkeley
-
-# This command evaluates ResNet-101 model in DistMap-BRS mode on DAVIS dataset.
-python3 scripts/evaluate_model.py DistMap-BRS --checkpoint=resnet101_dh256_sbd --datasets=DAVIS
-```
-
-### Jupyter notebook
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/saic-vul/fbrs_interactive_segmentation/blob/master/notebooks/colab_test_any_model.ipynb)
-
-You can also interactively experiment with our models using [test_any_model.ipynb](./notebooks/test_any_model.ipynb) Jupyter notebook.
-
-## Training
-
-We provide the scripts for training our models on SBD dataset. You can start training with the following commands:
-```.bash
-# ResNet-34 model
-python3 train.py models/sbd/r34_dh128.py --gpus=0,1 --workers=4 --exp-name=first-try
-
-# ResNet-50 model
-python3 train.py models/sbd/r50_dh128.py --gpus=0,1 --workers=4 --exp-name=first-try
-
-# ResNet-101 model
-python3 train.py models/sbd/r101_dh256.py --gpus=0,1,2,3 --workers=6 --exp-name=first-try
-
-# HRNetV2-W32+OCR model
-python3 train.py models/sbd/hrnet32_ocr128.py --gpus=0,1 --workers=4 --exp-name=first-try
-```
-
-For each experiment, a separate folder is created in the `./experiments` with Tensorboard logs, text logs, visualization and model's checkpoints. You can specify another path in the [config.yml](config.yml) (see `EXPS_PATH` variable).
-
-Please note that we have trained ResNet-34 and ResNet-50 models on 2 GPUs, ResNet-101 on 4 GPUs (we used Nvidia Tesla P40 for training). If you are going to train models in different GPUs configuration, you will need to set a different batch size. You can specify batch size using the command line argument `--batch-size` or change the default value in model script.
-
-We used pre-trained HRNetV2 models from [the official repository](https://github.com/HRNet/HRNet-Image-Classification). If you want to train interactive segmentation with these models, you need to download weights and specify the paths to them in [config.yml](config.yml).
 
 ## License
 

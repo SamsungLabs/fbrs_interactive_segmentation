@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from torchvision import transforms
+from PIL import Image
 
 from isegm.inference import clicker
 from isegm.inference.predictors import get_predictor
@@ -53,6 +54,10 @@ class InteractiveController:
             self.probs_history.append((self.probs_history[-1][0], pred))
         else:
             self.probs_history.append((np.zeros_like(pred), pred))
+        log_pred = pred > 0.5
+        num_pred = log_pred.astype(int)*255
+        print(pred)
+        # print(num_pred)
 
         self.update_image_callback()
 
