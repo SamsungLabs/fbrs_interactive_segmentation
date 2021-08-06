@@ -1,4 +1,6 @@
-## This Fork
+## Interactive Segmentation using f-BRS
+
+<img src="https://media2.giphy.com/media/ZfS8bjls6D7BI4qlg5/giphy.gif?cid=790b7611fb7f28a26c645d7c6d61f05f1a3784b41640215e&rid=giphy.gif&ct=g" width="300" height="300"/>
 
 This fork makes the f-BRS library easier to work with for your own application. Here are the steps to use it:
 
@@ -18,7 +20,7 @@ In your own project, insert the following code to interactively segment an image
 
 ```python
 import sys
-sys.path.append('./fbrs_interactive_segmentation') # append system path to library
+sys.path.append('path-to-fbrs-repo') # append system path to library
 from fbrs_interactive_segmentation import fbrs_predict # import library to your project
 
 checkpoint = 'resnet34_dh128_sbd' # Download a pretrained model from below, and place it in the weights folder in this library
