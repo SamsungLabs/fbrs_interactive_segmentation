@@ -23,9 +23,11 @@ import sys
 sys.path.append('path-to-fbrs-repo') # append system path to library
 from fbrs_interactive_segmentation import fbrs_predict # import library to your project
 
-checkpoint = 'resnet34_dh128_sbd' # Download a pretrained model from below, and place it in the weights folder in this library
+checkpoint = 'resnet34_dh128_sbd' # Download a pretrained model from below, 
+                                  # and place it in the weights folder in this library
 engine = fbrs_predict.fbrs_engine(checkpoint) # Initialize model
-image = cv2.imread('path-to-image') # Load image (make sure to downscale image first to remove high frequency components)
+image = cv2.imread('path-to-image') # Load your image 
+                                    # make sure to downscale image first to remove high frequency components
 x_coord = [] # x image coordinates seed pts
 y_coord = [] # y image coordinates seed pts
 is_pos = []  # Either 1 or 0 for + or - seed pts
