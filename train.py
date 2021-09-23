@@ -4,6 +4,7 @@ import importlib.util
 import torch
 from isegm.utils.exp import init_experiment
 
+import pretty_errors
 
 def main():
     args = parse_args()
