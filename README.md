@@ -4,7 +4,7 @@ This repository provides code for training and testing state-of-the-art models f
 
 > **f-BRS: Rethinking Backpropagating Refinement for Interactive Segmentation**<br>
 > [Konstantin Sofiiuk](https://github.com/ksofiyuk), [Ilia Petrov](https://github.com/ptrvilya), [Olga Barinova](https://github.com/OlgaBarinova), [Anton Konushin](https://scholar.google.com/citations?user=ZT_k-wMAAAAJ)<br>
-> Samsung AI Center Moscow <br>
+> Samsung Research <br>
 > https://arxiv.org/abs/2001.10331
 
 Please see [the video](https://youtu.be/ArcZ5xtyMCk) below explaining how our algorithm works:
